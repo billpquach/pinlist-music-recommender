@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pinterest → Spotify Music Recommender</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f8f9fa;
+            color: #222;
+            max-width: 800px;
+            margin: 60px auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            font-size: 2.5rem;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin-top: 30px;
+        }
+        footer {
+            margin-top: 60px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        a {
+            color: #1DB954;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Pinterest → Spotify Music Recommender</h1>
+
+    <div class="card">
+        <p>
+            This application analyzes a user’s Pinterest boards and saved pins 
+            to generate personalized Spotify music recommendations.
+        </p>
+
+        <p>
+            Using semantic embeddings from pin metadata (board names, descriptions, and images),
+            we map visual interests to Spotify audio features such as:
+        </p>
+
+        <ul>
+            <li>Acousticness</li>
+            <li>Energy</li>
+            <li>Danceability</li>
+            <li>Valence</li>
+            <li>Instrumentalness</li>
+        </ul>
+
+        <p>
+            This is a student research project and is not affiliated with Pinterest or Spotify.
+        </p>
+
+        <p>
+            <strong>Privacy Policy:</strong> 
+            <a href="privacy.html">View here</a>
+        </p>
+    </div>
+
+    <footer>
+        © 2026 Bill Quach | Contact: billpquach@gmail.com
+    </footer>
+
+</body>
+</html>
