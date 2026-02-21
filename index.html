@@ -1,54 +1,107 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Pinterest → Spotify Music Recommender</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #f8f9fa;
-            color: #222;
-            max-width: 800px;
-            margin: 60px auto;
-            padding: 20px;
-            line-height: 1.6;
-        }
-        h1 {
-            font-size: 2.5rem;
-        }
-        .card {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            margin-top: 30px;
-        }
-        footer {
-            margin-top: 60px;
-            font-size: 0.9rem;
-            color: #666;
-        }
-        a {
-            color: #1DB954;
-            text-decoration: none;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pinlist – Pinterest to Music Recommendation</title>
+
+<style>
+    body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background-color: #111418;
+        color: #e6e6e6;
+        line-height: 1.6;
+    }
+
+    .container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 80px 24px;
+    }
+
+    h1 {
+        font-size: 2.8rem;
+        margin-bottom: 10px;
+        font-weight: 600;
+    }
+
+    h2 {
+        margin-top: 40px;
+        font-weight: 500;
+        color: #c9d1d9;
+    }
+
+    .subtitle {
+        color: #9aa4b2;
+        font-size: 1.2rem;
+        margin-bottom: 50px;
+    }
+
+    .card {
+        background-color: #1a1f24;
+        padding: 40px;
+        border-radius: 12px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+    }
+
+    ul {
+        padding-left: 20px;
+    }
+
+    li {
+        margin-bottom: 8px;
+    }
+
+    a {
+        color: #4ea1ff;
+        text-decoration: none;
+    }
+
+    a:hover {
+        text-decoration: underline;
+    }
+
+    footer {
+        margin-top: 80px;
+        text-align: center;
+        font-size: 0.9rem;
+        color: #8b949e;
+    }
+
+    .disclaimer {
+        margin-top: 40px;
+        font-size: 0.9rem;
+        color: #8b949e;
+    }
+</style>
 </head>
+
 <body>
 
-    <h1>Pinterest → Spotify Music Recommender</h1>
+<div class="container">
+
+    <h1>Pinlist</h1>
+    <div class="subtitle">
+        A multimodal music recommendation system based on Pinterest user interests.
+    </div>
 
     <div class="card">
-        <p>
-            This application analyzes a user’s Pinterest boards and saved pins 
-            to generate personalized Spotify music recommendations.
-        </p>
 
         <p>
-            Using semantic embeddings from pin metadata (board names, descriptions, and images),
-            we map visual interests to Spotify audio features such as:
+            Pinlist is a student research project that analyzes a user’s Pinterest boards 
+            and saved pins to generate personalized music recommendations using Spotify audio features.
         </p>
+
+        <h2>How It Works</h2>
+
+        <p>
+            The system extracts semantic information from board names, descriptions, 
+            and available pin metadata. These signals are encoded into embeddings 
+            and mapped to Spotify audio characteristics through a predictive model.
+        </p>
+
+        <h2>Predicted Audio Features</h2>
 
         <ul>
             <li>Acousticness</li>
@@ -59,18 +112,27 @@
         </ul>
 
         <p>
-            This is a student research project and is not affiliated with Pinterest or Spotify.
+            The application integrates with the official Pinterest and Spotify APIs 
+            using user authorization. Data is processed only for recommendation generation.
         </p>
 
         <p>
-            <strong>Privacy Policy:</strong> 
-            <a href="privacy.html">View here</a>
+            <a href="privacy.html">View Privacy Policy</a>
         </p>
+
+        <div class="disclaimer">
+            This project is not affiliated with, endorsed by, or sponsored by Pinterest or Spotify.
+        </div>
+
     </div>
 
     <footer>
-        © 2026 Bill Quach | Contact: billpquach@gmail.com
+        © 2026 Bill Quach · Student Developer <br>
+        billpquach@gmail.com
     </footer>
+
+</div>
 
 </body>
 </html>
+
