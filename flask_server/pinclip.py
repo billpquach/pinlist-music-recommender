@@ -23,7 +23,6 @@ model.eval()
 print("CLIP ready.\n")
 
 # ─── Mood Labels ─────────────────────────────────────────────────────────────
-# Used for image classification — do not overwrite this later in the file
 
 MOOD_LABELS = [
     "dark and moody",
@@ -40,9 +39,7 @@ MOOD_LABELS = [
     "preppy",
 ]
 
-# ─── Mood Prompts (for CLIP filtering) ───────────────────────────────────────
-# Rich descriptive sentences give CLIP's text encoder enough surface area
-# to score tracks accurately without needing a second model
+# ─── Mood Prompts ─────────────────────────────────────────────────────────────
 
 MOOD_PROMPTS = {
     "dark and moody":       "A slow, brooding song with minor chords and a melancholic atmosphere",
@@ -77,7 +74,6 @@ MOOD_SEEDS = {
 }
 
 # ─── Pre-cache mood embeddings ────────────────────────────────────────────────
-# Encode all mood prompts once at startup so scoring is just a dot product
 
 print("Caching mood embeddings...")
 mood_embeddings: dict[str, torch.Tensor] = {}
@@ -108,7 +104,6 @@ def load_image(url: str) -> Image.Image:
 
 
 def classify_image(image: Image.Image) -> list[float]:
-    """Returns a probability distribution over MOOD_LABELS for a single image."""
     inputs = processor(
         text=MOOD_LABELS,
         images=image,
@@ -121,10 +116,6 @@ def classify_image(image: Image.Image) -> list[float]:
 
 
 def aggregate_board_probs(image_urls: list[str]) -> list[float]:
-    """
-    Runs CLIP on every image URL and averages the mood probability
-    distributions into a single board-level fingerprint.
-    """
     all_probs = []
 
     for i, url in enumerate(image_urls):
@@ -147,16 +138,10 @@ def aggregate_board_probs(image_urls: list[str]) -> list[float]:
 RECCOBEATS_BASE = "https://api.reccobeats.com/v1"
 
 
-def board_to_recommendations(probs: list[float], size: int = 50) -> dict:
-    """
-    Picks the top mood from the probability distribution, selects up to 5
-    seed tracks for that mood, and fetches recommendations from ReccoBeats.
-    Returns the raw API response dict (with a 'content' key).
-    """
+def board_to_recommendations(probs: list[float], size: int = 50) -> tuple[dict, str]:
     sorted_moods = sorted(zip(probs, MOOD_LABELS), reverse=True)
     top_mood     = sorted_moods[0][1]
-
-    seeds = MOOD_SEEDS.get(top_mood, [])[:5]
+    seeds        = MOOD_SEEDS.get(top_mood, [])[:5]
 
     print(f"Top mood:    {top_mood}")
     print(f"Seeds:       {seeds}")
@@ -170,12 +155,10 @@ def board_to_recommendations(probs: list[float], size: int = 50) -> dict:
 
 # ─── CLIP Track Scoring ───────────────────────────────────────────────────────
 
-def score_all_tracks(recs: dict, mood: str) -> list[tuple[float, str, str, str]]:
+def score_all_tracks(recs: dict, mood: str) -> list[tuple]:
     """
-    Scores every track in recs['content'] against the cached mood embedding.
-    Returns a list of (score, title, artist, spotify_url) tuples.
-
-    Batches all track texts into a single CLIP forward pass for efficiency.
+    Scores every track against the cached mood embedding.
+    Returns (score, title, artist, spotify_url, thumbnail_url) tuples.
     """
     tracks = recs.get("content", [])
     if not tracks:
@@ -185,16 +168,21 @@ def score_all_tracks(recs: dict, mood: str) -> list[tuple[float, str, str, str]]
     track_meta  = []
 
     for track in tracks:
-        name   = track.get("trackTitle", "Unknown")
-        artist = track["artists"][0]["name"] if track.get("artists") else "Unknown"
-        href   = track.get("href", "")
-        url    = f"https://open.spotify.com/track/{href.split('/')[-1]}"
+        name      = track.get("trackTitle", "Unknown")
+        artist    = track["artists"][0]["name"] if track.get("artists") else "Unknown"
+        href      = track.get("href", "")
+        url       = f"https://open.spotify.com/track/{href.split('/')[-1]}"
+
+        # ReccoBeats returns thumbnail under track.thumbnail or track.album.thumbnail
+        thumbnail = (
+            track.get("thumbnail")
+            or track.get("album", {}).get("thumbnail")
+            or ""
+        )
 
         track_texts.append(f'A song called "{name}" by {artist}')
-        track_meta.append((name, artist, url))
+        track_meta.append((name, artist, url, thumbnail))
 
-    # Encode all tracks in one forward pass
-    # Filter to text-only keys so get_text_features returns a raw tensor
     inputs = processor(
         text=track_texts,
         return_tensors="pt",
@@ -209,17 +197,17 @@ def score_all_tracks(recs: dict, mood: str) -> list[tuple[float, str, str, str]]
         embeddings = model.text_projection(embeddings)
 
     embeddings  = F.normalize(embeddings, p=2, dim=-1)
-    mood_vec    = mood_embeddings[mood]                   # cached at startup
+    mood_vec    = mood_embeddings[mood]
     scores      = (embeddings @ mood_vec).tolist()
 
-    return [(score, name, artist, url)
-            for score, (name, artist, url) in zip(scores, track_meta)]
+    return [
+        (score, name, artist, url, thumbnail)
+        for score, (name, artist, url, thumbnail) in zip(scores, track_meta)
+    ]
 
 # ─── Playlist Filtering ───────────────────────────────────────────────────────
 
-def deduplicate_by_artist(
-    scored: list[tuple], max_per_artist: int = 2
-) -> list[tuple]:
+def deduplicate_by_artist(scored: list[tuple], max_per_artist: int = 2) -> list[tuple]:
     artist_count: dict[str, int] = {}
     result = []
     for entry in scored:
@@ -236,17 +224,11 @@ def filter_to_final_playlist(
     target:     int   = 12,
     min_target: int   = 8,
     threshold:  float = 0.25,
-) -> list[tuple[float, str, str, str]]:
-    """
-    Scores all tracks with CLIP, sorts by similarity, deduplicates by artist,
-    and returns the top 12–15 tracks above the similarity threshold.
-    Falls back to top min_target tracks if too few pass the threshold.
-    """
+) -> list[tuple]:
     scored = score_all_tracks(recs, mood)
     scored.sort(reverse=True)
-
-    scored    = deduplicate_by_artist(scored)
-    playlist  = [t for t in scored[:target] if t[0] > threshold]
+    scored   = deduplicate_by_artist(scored)
+    playlist = [t for t in scored[:target] if t[0] > threshold]
 
     if len(playlist) < min_target:
         playlist = scored[:min_target]
@@ -272,12 +254,12 @@ def run_pipeline(image_urls: list[str]) -> list[tuple]:
     print(f"── Received {len(recs['content'])} candidates, filtering with CLIP...")
     playlist = filter_to_final_playlist(recs, mood)
 
-    return playlist
+    return playlist, mood
 
 
 def print_playlist(playlist: list[tuple]) -> None:
     print(f"\n🎵 Final Playlist ({len(playlist)} tracks)\n{'─'*48}")
-    for i, (score, name, artist, url) in enumerate(playlist, 1):
+    for i, (score, name, artist, url, thumbnail) in enumerate(playlist, 1):
         print(f"  {i:>2}. {name} — {artist}")
         print(f"      {url}")
         print(f"      similarity: {score:.3f}\n")
@@ -286,10 +268,8 @@ def print_playlist(playlist: list[tuple]) -> None:
 # ─── Entry Point ─────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    # Replace with real image URLs from your Flask /pins/<board_id> endpoint
     TEST_IMAGES = [
         "https://www.theknot.com/tk-media/images/f2b93b5b-623e-42d4-a76e-8f38d4ed463a",
     ]
-
-    playlist = run_pipeline(TEST_IMAGES)
+    playlist, mood = run_pipeline(TEST_IMAGES)
     print_playlist(playlist)
