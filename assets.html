@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Pinlist Asset Map</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background:#f6f8fb; color:#1d2d44; margin:0; padding:2rem; }
+    h1 { margin-bottom:0.5rem; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1rem; }
+    .card { background:white; padding:1rem; border-radius:0.75rem; box-shadow:0 8px 24px rgba(15,23,42,0.08); }
+    .card h2 { margin-top:0; font-size:1.05rem; }
+    .flow { margin-top:2rem; }
+    .flow span { font-weight:600; }
+    .arrow { display:inline-block; margin:0 0.25rem; }
+    a { color:#2c76ff; text-decoration:none; }
+    ul { margin:0; padding-left:1em; }
+  </style>
+</head>
+<body>
+  <h1>Pinlist Asset Map</h1>
+  <p>This page shows how the project pieces connect from UI to ML-ready backend data.</p>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Frontend Shell</h2>
+      <p><a href="index.html">index.html</a> bootstraps the SPA with login/board state sections and links to <a href="css/style.css">css/style.css</a> for layout.</p>
+      <p>It loads <a href="js/main.js">js/main.js</a> to decide whether to show the login call-to-action or render Pinterest boards.</p>
+    </div>
+
+    <div class="card">
+      <h2>Auth Helpers</h2>
+      <p><a href="js/auth.js">js/auth.js</a> keeps Pinterest OAuth logic: redirecting users, validating the callback state, exchanging codes via the backend, and storing the session ID.</p>
+      <p>Once authenticated, the session ID drives every subsequent call to the Flask API.</p>
+    </div>
+
+    <div class="card">
+      <h2>Flask Backend</h2>
+      <p><a href="python_server/server.py">python_server/server.py</a> maintains an in-memory token store keyed by session ID, proxies Pinterest API calls, paginates boards/pins, and exposes structured endpoints.</p>
+      <p>/boards returns board metadata, /pins/<code>board_id</code> returns curated pin info, and /board-data/<code>board_id</code> bundles everything needed for the CLIP/Text pipeline.</p>
+    </div>
+
+    <div class="card">
+      <h2>Supportive Server</h2>
+      <p><a href="server/index.js">server/index.js</a> is a lightweight Express alternative that only exposes /exchange-token for Pinterest token swaps if you prefer Node.</p>
+      <p>It demonstrates the bare minimum headers/body structure needed to talk to Pinterest’s OAuth endpoint.</p>
+    </div>
+  </div>
+
+  <div class="flow">
+    <p>
+      <span>1. Browser</span> → loads <span>index.html</span> → runs <span>js/auth.js</span> + <span>js/main.js</span><br />
+      <span>2. Auth flow</span> → <span>js/auth.js</span> calls <a href="python_server/server.py">Flask /exchange-token</a> or <a href="server/index.js">Express /exchange-token</a><br />
+      <span>3. Data fetch</span> → <span>js/main.js</span> requests <span>/boards</span> and later <span>/board-data/&lt;board_id&gt;</span><br />
+      <span>4. ML pipeline</span> → Flask replies with pins, image URLs, and assembled text used for embeddings/CLIP.
+    </p>
+  </div>
+
+  <p>Extend this map as you wire the analysis button to call the ML endpoint or add deployment-specific config.</p>
+</body>
+</html>

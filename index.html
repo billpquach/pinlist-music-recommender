@@ -1,138 +1,123 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pinlist – Pinterest to Music Recommendation</title>
-
-<style>
-    body {
-        margin: 0;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        background-color: #111418;
-        color: #e6e6e6;
-        line-height: 1.6;
-    }
-
-    .container {
-        max-width: 900px;
-        margin: 0 auto;
-        padding: 80px 24px;
-    }
-
-    h1 {
-        font-size: 2.8rem;
-        margin-bottom: 10px;
-        font-weight: 600;
-    }
-
-    h2 {
-        margin-top: 40px;
-        font-weight: 500;
-        color: #c9d1d9;
-    }
-
-    .subtitle {
-        color: #9aa4b2;
-        font-size: 1.2rem;
-        margin-bottom: 50px;
-    }
-
-    .card {
-        background-color: #1a1f24;
-        padding: 40px;
-        border-radius: 12px;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.4);
-    }
-
-    ul {
-        padding-left: 20px;
-    }
-
-    li {
-        margin-bottom: 8px;
-    }
-
-    a {
-        color: #4ea1ff;
-        text-decoration: none;
-    }
-
-    a:hover {
-        text-decoration: underline;
-    }
-
-    footer {
-        margin-top: 80px;
-        text-align: center;
-        font-size: 0.9rem;
-        color: #8b949e;
-    }
-
-    .disclaimer {
-        margin-top: 40px;
-        font-size: 0.9rem;
-        color: #8b949e;
-    }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PinClip – Your Boards, Your Sound</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css" />
 </head>
-
 <body>
 
-<div class="container">
+  <!-- Ambient background -->
+  <div class="glow-orb one"></div>
+  <div class="glow-orb two"></div>
 
-    <h1>Pinlist</h1>
-    <div class="subtitle">
-        A multimodal music recommendation system based on Pinterest user interests.
-    </div>
+  <div class="page-wrap">
 
-    <div class="card">
-
-        <p>
-            Pinlist is a student research project that analyzes a user’s Pinterest boards 
-            and saved pins to generate personalized music recommendations using Spotify audio features.
+    <!-- ── Hero ── -->
+    <section class="hero" id="login-section">
+      <div class="hero-text">
+        <div class="eyebrow fade-up">Visual taste → music</div>
+        <h1 class="fade-up delay-1">Pin<em>Clip</em></h1>
+        <p class="hero-sub fade-up delay-2">
+          Your Pinterest boards carry a mood. We translate that mood into a playlist.
         </p>
+        <button class="btn-connect fade-up delay-3" id="login-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.373 0 0 5.373 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738a.36.36 0 0 1 .083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.632-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/>
+          </svg>
+          Connect Pinterest
+        </button>
+      </div>
+    </section>
 
-        <h2>How It Works</h2>
+    <!-- ── Board Selection ── -->
+    <section id="boards-section">
+      <p class="section-label">Your boards</p>
+      <div id="boards-container"></div>
+      <div class="analyze-wrap">
+        <button id="analyze-btn">
+          Find my music
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </button>
+        <span class="selection-count" id="selection-count"></span>
+      </div>
+    </section>
 
-        <p>
-            The system extracts semantic information from board names, descriptions, 
-            and available pin metadata. These signals are encoded into embeddings 
-            and mapped to Spotify audio characteristics through a predictive model.
-        </p>
+    <div class="divider"></div>
 
-        <h2>Predicted Audio Features</h2>
+    <!-- ── Info Card ── -->
+    <div class="info-card">
 
-        <ul>
-            <li>Acousticness</li>
-            <li>Energy</li>
-            <li>Danceability</li>
-            <li>Valence</li>
-            <li>Instrumentalness</li>
-        </ul>
+      <h2>What is PinClip?</h2>
+      <p>
+        A research project that reads the visual language of your Pinterest boards —
+        colors, subjects, moods — and maps that aesthetic fingerprint to a musical profile,
+        generating a playlist that feels like your board sounds.
+      </p>
 
-        <p>
-            The application integrates with the official Pinterest and Spotify APIs 
-            using user authorization. Data is processed only for recommendation generation.
-        </p>
-
-        <p>
-            <a href="privacy.html">View Privacy Policy</a>
-        </p>
-
-        <div class="disclaimer">
-            This project is not affiliated with, endorsed by, or sponsored by Pinterest or Spotify.
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">01</div>
+          <h3>Visual Analysis</h3>
+          <p>CLIP encodes every pin image into a mood probability across 9 aesthetic categories.</p>
         </div>
+        <div class="step">
+          <div class="step-num">02</div>
+          <h3>Profile Mapping</h3>
+          <p>Mood probabilities are weighted and translated into a set of quantified musical characteristics.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">03</div>
+          <h3>Recommendation</h3>
+          <p>Candidate tracks are surfaced and filtered by a language model for tonal accuracy.</p>
+        </div>
+      </div>
 
+      <h2>Musical Dimensions</h2>
+      <p>Each board generates a unique blend across these characteristics:</p>
+      <ul id="features-list">
+        <li>Mood · emotional tone</li>
+        <li>Energy · intensity &amp; drive</li>
+        <li>Rhythm · danceability</li>
+        <li>Texture · acoustic vs. electronic</li>
+        <li>Tempo · beats per minute</li>
+        <li>Tonality · major vs. minor</li>
+        <li>Instrumentation · vocal presence</li>
+        <li>Dynamics · loudness range</li>
+      </ul>
+
+      <div class="actions">
+        <button id="demo-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="5 3 19 12 5 21 5 3"/>
+          </svg>
+          Run demo
+        </button>
+      </div>
+
+      <div id="results"></div>
+
+      <div class="info-footer">
+        <a href="privacy.html">Privacy policy →</a>
+        <p class="disclaimer">
+          Not affiliated with or endorsed by Pinterest or Spotify.
+        </p>
+      </div>
     </div>
 
+    <!-- ── Footer ── -->
     <footer>
-        © 2026 Bill Quach · Student Developer <br>
-        billpquach@gmail.com
+      <span class="footer-brand">PinClip</span>
+      <span>© 2026 Bill Quach · billpquach@gmail.com</span>
     </footer>
 
-</div>
+  </div>
 
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>
-
