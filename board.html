@@ -4,345 +4,78 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PinClip – Board</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+    rel="stylesheet"
+  />
   <link rel="stylesheet" href="css/style.css" />
-  <style>
-    /* ─── Board header ───────────────────────────────────────────────────────── */
-    .board-header {
-      padding: 64px 0 40px;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 40px;
-    }
-
-    .back-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
-      color: var(--muted);
-      text-decoration: none;
-      margin-bottom: 24px;
-      transition: color var(--transition);
-    }
-    .back-link:hover { color: var(--text); }
-
-    .board-title {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(2rem, 5vw, 3.5rem);
-      font-weight: 700;
-      line-height: 1.1;
-      margin-bottom: 8px;
-    }
-
-    .board-subtitle {
-      font-size: 13px;
-      color: var(--muted);
-    }
-
-    .find-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 28px;
-      padding: 14px 32px;
-      background: var(--red);
-      color: #fff;
-      border: none;
-      border-radius: 50px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 15px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
-    }
-    .find-btn:hover {
-      background: #ff0028;
-      transform: translateY(-2px);
-      box-shadow: 0 8px 32px rgba(230,0,35,0.4);
-    }
-    .find-btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-    }
-
-    /* ─── Two-column layout ──────────────────────────────────────────────────── */
-    .board-body {
-      display: grid;
-      grid-template-columns: 1fr 380px;
-      gap: 48px;
-      align-items: start;
-    }
-
-    /* ─── Pins grid ──────────────────────────────────────────────────────────── */
-    .pins-section {}
-
-    .section-label {
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .section-label::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
-
-    .pins-grid {
-      columns: 3;
-      column-gap: 10px;
-    }
-
-    .pin-item {
-      break-inside: avoid;
-      margin-bottom: 10px;
-      border-radius: 10px;
-      overflow: hidden;
-      background: var(--surface);
-    }
-    .pin-item img {
-      width: 100%;
-      display: block;
-      object-fit: cover;
-    }
-
-    /* ─── Playlist panel ─────────────────────────────────────────────────────── */
-    .playlist-panel {
-      position: sticky;
-      top: 32px;
-    }
-
-    .playlist-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      overflow: hidden;
-      position: relative;
-    }
-    .playlist-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, var(--red), transparent 70%);
-    }
-
-    .playlist-card-header {
-      padding: 24px 24px 16px;
-      border-bottom: 1px solid var(--border);
-    }
-    .playlist-card-header h3 {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.2rem;
-      font-weight: 400;
-      margin-bottom: 4px;
-    }
-    .playlist-card-header p {
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .playlist-empty {
-      padding: 48px 24px;
-      text-align: center;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.7;
-    }
-    .playlist-empty .empty-icon {
-      font-size: 32px;
-      margin-bottom: 12px;
-      opacity: 0.4;
-    }
-
-    /* ─── Track items with album art ─────────────────────────────────────────── */
-    .track-list {
-      padding: 8px 0;
-      max-height: 70vh;
-      overflow-y: auto;
-    }
-    .track-list::-webkit-scrollbar { width: 4px; }
-    .track-list::-webkit-scrollbar-track { background: transparent; }
-    .track-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-    .track-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 16px;
-      text-decoration: none;
-      color: var(--text);
-      transition: background var(--transition);
-      border-radius: 0;
-    }
-    .track-item:hover {
-      background: var(--surface2);
-      text-decoration: none;
-    }
-
-    .track-num {
-      font-family: 'Playfair Display', serif;
-      font-size: 0.9rem;
-      color: var(--muted);
-      width: 18px;
-      text-align: right;
-      flex-shrink: 0;
-    }
-
-    .track-thumb {
-      width: 40px;
-      height: 40px;
-      border-radius: 6px;
-      object-fit: cover;
-      background: var(--surface2);
-      flex-shrink: 0;
-    }
-
-    .track-thumb-placeholder {
-      width: 40px;
-      height: 40px;
-      border-radius: 6px;
-      background: var(--surface2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-      flex-shrink: 0;
-    }
-
-    .track-info {
-      flex: 1;
-      min-width: 0;
-    }
-    .track-name {
-      font-size: 13px;
-      font-weight: 500;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .track-artist {
-      font-size: 11px;
-      color: var(--muted);
-      margin-top: 2px;
-    }
-
-    .track-link {
-      font-size: 10px;
-      color: #1DB954;
-      flex-shrink: 0;
-      opacity: 0.7;
-    }
-
-    /* ─── Loading state ──────────────────────────────────────────────────────── */
-    .playlist-loading {
-      padding: 48px 24px;
-      text-align: center;
-      color: var(--muted);
-      font-size: 13px;
-    }
-    .playlist-loading .spinner {
-      margin: 0 auto 16px;
-      display: block;
-      width: 24px;
-      height: 24px;
-      border-width: 2px;
-    }
-
-    /* ─── Mood badge ─────────────────────────────────────────────────────────── */
-    .mood-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 12px;
-      background: rgba(230,0,35,0.12);
-      color: var(--red);
-      border-radius: 50px;
-      font-size: 11px;
-      font-weight: 500;
-      margin-top: 8px;
-      border: 1px solid rgba(230,0,35,0.2);
-    }
-
-    @media (max-width: 768px) {
-      .board-body { grid-template-columns: 1fr; }
-      .playlist-panel { position: static; }
-      .pins-grid { columns: 2; }
-    }
-  </style>
 </head>
 <body>
+  <div class="page-shell">
+    <div class="ambient-grid"></div>
+    <main class="app-shell board-app">
+      <section class="board-hero">
+        <a class="back-link" href="index.html">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 5l-7 7 7 7" />
+          </svg>
+          All boards
+        </a>
+        <p class="eyebrow">Pinterest board</p>
+        <h1 id="board-title">Loading…</h1>
+        <p class="hero-subhead" id="board-subtitle"></p>
+        <button class="btn-solid btn-lg btn-full" id="find-btn">
+          <span>Find music for this board</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14M12 5l7 7-7 7" />
+          </svg>
+        </button>
+      </section>
 
-  <div class="glow-orb one"></div>
-  <div class="glow-orb two"></div>
-
-  <div class="page-wrap">
-
-    <!-- ── Board Header ── -->
-    <div class="board-header">
-      <a href="index.html" class="back-link">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M19 12H5M12 5l-7 7 7 7"/>
-        </svg>
-        All boards
-      </a>
-      <div class="eyebrow">Pinterest board</div>
-      <h1 class="board-title" id="board-title">Loading…</h1>
-      <p class="board-subtitle" id="board-subtitle"></p>
-      <button class="find-btn" id="find-btn">
-        Find music for this board
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M5 12h14M12 5l7 7-7 7"/>
-        </svg>
-      </button>
-    </div>
-
-    <!-- ── Body ── -->
-    <div class="board-body">
-
-      <!-- Pins -->
-      <div class="pins-section">
-        <p class="section-label">Pins</p>
-        <div class="pins-grid" id="pins-grid">
-          <div style="color:var(--muted);font-size:13px;">Loading pins…</div>
-        </div>
-      </div>
-
-      <!-- Playlist panel -->
-      <div class="playlist-panel">
-        <div class="playlist-card">
-          <div class="playlist-card-header">
-            <h3>Your Playlist</h3>
-            <p id="playlist-meta">Select a board and click "Find music"</p>
-            <div id="mood-badge-wrap"></div>
-          </div>
-          <div id="playlist-body">
-            <div class="playlist-empty">
-              <div class="empty-icon">🎵</div>
-              <p>Your playlist will appear here once the analysis is complete.</p>
+      <div class="board-layout">
+        <section class="section playlist-panel">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">playlist</p>
+              <h2>Your PinClip mix</h2>
             </div>
           </div>
-        </div>
+          <div class="playlist-card">
+            <div class="playlist-card-header">
+              <h3>Pin to playlist</h3>
+              <p id="playlist-meta">Select a board and tap “Find music”.</p>
+            </div>
+            <div id="mood-badge-wrap" class="mood-badge-row"></div>
+            <div id="playlist-body">
+              <div class="playlist-empty">
+                <div class="empty-icon">🎵</div>
+                <p>Your bespoke playlist will appear once PinClip reads the mood.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section pins-panel">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">pins</p>
+              <h2>Textures, captions, and color stories</h2>
+            </div>
+            <span class="section-meta">Auto-refreshes at every pin</span>
+          </div>
+          <div class="pins-grid" id="pins-grid">
+            <div style="color:var(--muted);font-size:13px;">Loading pins…</div>
+          </div>
+        </section>
       </div>
-
-    </div>
-
-    <footer>
-      <span class="footer-brand">PinClip</span>
-      <span>© 2026 Bill Quach · billpquach@gmail.com</span>
+    </main>
+    <footer class="footer">
+      <span>© 2026 PinClip by Bill Quach</span>
+      <a href="privacy.html">Privacy policy</a>
     </footer>
-
   </div>
-
   <script type="module" src="js/board.js"></script>
 </body>
 </html>

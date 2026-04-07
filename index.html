@@ -3,121 +3,93 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PinClip – Your Boards, Your Sound</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <title>PinClip — Your boards, your sound</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+    rel="stylesheet"
+  />
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-
-  <!-- Ambient background -->
-  <div class="glow-orb one"></div>
-  <div class="glow-orb two"></div>
-
-  <div class="page-wrap">
-
-    <!-- ── Hero ── -->
+  <div class="page-shell">
+    <div class="ambient-grid"></div>
+    <main class="app-shell">
     <section class="hero" id="login-section">
-      <div class="hero-text">
-        <div class="eyebrow fade-up">Visual taste → music</div>
-        <h1 class="fade-up delay-1">Pin<em>Clip</em></h1>
-        <p class="hero-sub fade-up delay-2">
-          Your Pinterest boards carry a mood. We translate that mood into a playlist.
-        </p>
-        <button class="btn-connect fade-up delay-3" id="login-btn">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 0C5.373 0 0 5.373 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738a.36.36 0 0 1 .083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.632-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/>
-          </svg>
-          Connect Pinterest
-        </button>
-      </div>
-    </section>
-
-    <!-- ── Board Selection ── -->
-    <section id="boards-section">
-      <p class="section-label">Your boards</p>
-      <div id="boards-container"></div>
-      <div class="analyze-wrap">
-        <button id="analyze-btn">
-          Find my music
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M5 12h14M12 5l7 7-7 7"/>
-          </svg>
-        </button>
-        <span class="selection-count" id="selection-count"></span>
-      </div>
-    </section>
-
-    <div class="divider"></div>
-
-    <!-- ── Info Card ── -->
-    <div class="info-card">
-
-      <h2>What is PinClip?</h2>
-      <p>
-        A research project that reads the visual language of your Pinterest boards —
-        colors, subjects, moods — and maps that aesthetic fingerprint to a musical profile,
-        generating a playlist that feels like your board sounds.
-      </p>
-
-      <div class="steps">
-        <div class="step">
-          <div class="step-num">01</div>
-          <h3>Visual Analysis</h3>
-          <p>CLIP encodes every pin image into a mood probability across 9 aesthetic categories.</p>
+        <div class="hero-text">
+          <p class="eyebrow">visual taste → bespoke playlists</p>
+          <h1>
+            Pin<span>Clip</span>
+          </h1>
+          <p class="hero-subhead">
+            We read the colors, textures, and energy of your Pinterest boards and translate that
+            vibe into a playlist that sounds like you.
+          </p>
+          <div class="hero-actions">
+            <button class="btn-solid" id="login-btn">
+              <span>Connect Pinterest</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M5 12h14M12 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </button>
+            <button class="btn-outline">Preview a mood</button>
+          </div>
+          <div class="hero-mood">
+            <div>
+              <p class="mood-label">Your board feels like</p>
+              <p class="mood-copy">an evening rooftop session with vinyl crackle.</p>
+            </div>
+            <div class="hero-mood-badges">
+              <span class="mood-badge">Sun-soaked</span>
+              <span class="mood-badge">Soft synth</span>
+              <span class="mood-badge">Warm rhythm</span>
+            </div>
+          </div>
         </div>
-        <div class="step">
-          <div class="step-num">02</div>
-          <h3>Profile Mapping</h3>
-          <p>Mood probabilities are weighted and translated into a set of quantified musical characteristics.</p>
+        <div class="hero-panel">
+          <div class="proof-tag">Hackathon mode · Gen Z ready</div>
+          <div class="hero-card">
+            <p class="hero-card-label">Latest board</p>
+            <h3>Daydream Interiors</h3>
+            <p class="hero-card-copy">
+              Pink terrazzo, sculptural lighting, and slow-motion coffee rituals.
+            </p>
+            <div class="hero-card-mood">
+              <span class="mood-chip">dreamy</span>
+              <span class="mood-chip">tactile</span>
+            </div>
+            <div class="hero-card-details">
+              <div>
+                <p class="hero-card-title">Playlist</p>
+                <p class="hero-card-value">14 tracks · 42 min</p>
+              </div>
+              <div>
+                <p class="hero-card-title">Energy</p>
+                <p class="hero-card-value">68 · mellow glow</p>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="step">
-          <div class="step-num">03</div>
-          <h3>Recommendation</h3>
-          <p>Candidate tracks are surfaced and filtered by a language model for tonal accuracy.</p>
+      </section>
+
+      <section class="section board-selection" id="boards-section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">board selection</p>
+            <h2>Choose a board and let PinClip read the room.</h2>
+          </div>
+          <button class="btn-link">View all boards</button>
         </div>
-      </div>
+        <div class="board-grid" id="boards-container"></div>
+      </section>
 
-      <h2>Musical Dimensions</h2>
-      <p>Each board generates a unique blend across these characteristics:</p>
-      <ul id="features-list">
-        <li>Mood · emotional tone</li>
-        <li>Energy · intensity &amp; drive</li>
-        <li>Rhythm · danceability</li>
-        <li>Texture · acoustic vs. electronic</li>
-        <li>Tempo · beats per minute</li>
-        <li>Tonality · major vs. minor</li>
-        <li>Instrumentation · vocal presence</li>
-        <li>Dynamics · loudness range</li>
-      </ul>
-
-      <div class="actions">
-        <button id="demo-btn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="5 3 19 12 5 21 5 3"/>
-          </svg>
-          Run demo
-        </button>
-      </div>
-
-      <div id="results"></div>
-
-      <div class="info-footer">
-        <a href="privacy.html">Privacy policy →</a>
-        <p class="disclaimer">
-          Not affiliated with or endorsed by Pinterest or Spotify.
-        </p>
-      </div>
-    </div>
-
-    <!-- ── Footer ── -->
-    <footer>
-      <span class="footer-brand">PinClip</span>
-      <span>© 2026 Bill Quach · billpquach@gmail.com</span>
+    </main>
+    <footer class="footer">
+      <span>© 2026 PinClip by Bill Quach</span>
+      <a href="privacy.html">Privacy policy</a>
     </footer>
-
   </div>
-
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

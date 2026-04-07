@@ -6,7 +6,6 @@ const FLASK_URL = "http://localhost:5000";
 const loginSection    = document.getElementById("login-section");
 const boardsSection   = document.getElementById("boards-section");
 const boardsContainer = document.getElementById("boards-container");
-const demoBtn         = document.getElementById("demo-btn");
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 const sessionId = await initAuth();
@@ -60,29 +59,42 @@ async function loadBoards(sessionId) {
   }
 }
 
+// ─── Utility ───────────────────────────────────────────────────────────────────
+function escapeHtml(value) {
+  const escapeMap = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+  return String(value ?? "").replace(/[&<>"']/g, char => escapeMap[char]);
+}
+
 // ─── Render boards ────────────────────────────────────────────────────────────
 // Each card navigates to board.html?id=BOARD_ID&name=BOARD_NAME
 function renderBoards(boards) {
   boardsContainer.innerHTML = "";
 
   boards.forEach(board => {
-    const card = document.createElement("div");
+    const card = document.createElement("article");
     card.className = "board-card";
 
-    const thumb = board.cover_image
+    const cover = board.cover_image
       ? `<img class="board-thumb" src="${board.cover_image}"
-             alt="${board.name}" loading="lazy"
+             alt="${escapeHtml(board.name)}" loading="lazy"
              onerror="this.style.display='none'" />`
       : `<div class="board-thumb-placeholder">📌</div>`;
 
+    const description = board.description
+      ? `<p class="board-desc">${escapeHtml(board.description)}</p>`
+      : "";
+
     card.innerHTML = `
-      ${thumb}
+      <div class="board-thumb-wrapper">${cover}</div>
       <div class="board-meta">
-        <h3>${board.name}</h3>
-        <span>${board.pin_count ?? 0} pins</span>
-        ${board.description
-          ? `<p class="board-desc">${board.description}</p>`
-          : ""}
+        <div>
+          <h3>${escapeHtml(board.name)}</h3>
+          ${description}
+        </div>
+        <div class="board-meta-footer">
+          <span class="board-count">${board.pin_count ?? 0} pins</span>
+          <span class="board-badge">Explore</span>
+        </div>
       </div>
     `;
 
@@ -93,50 +105,4 @@ function renderBoards(boards) {
 
     boardsContainer.appendChild(card);
   });
-}
-
-// ─── Demo ─────────────────────────────────────────────────────────────────────
-demoBtn?.addEventListener("click", () => {
-  renderPlaylist([
-    { name: "Holocene",        artist: "Bon Iver",         href: "https://open.spotify.com/track/7DfFc7a6Rwfi3YQMRbDMau" },
-    { name: "Motion Sickness", artist: "Phoebe Bridgers",  href: "https://open.spotify.com/track/2Co0IjcLTSHMtodwD4gzfg" },
-    { name: "Nuvole Bianche",  artist: "Ludovico Einaudi", href: "https://open.spotify.com/track/5l9c6bJmzvftumhz4TMPgk" },
-    { name: "Skinny Love",     artist: "Bon Iver",         href: "https://open.spotify.com/track/7oK9VyNzrYvRFo7nQEYkWN" },
-    { name: "Re: Stacks",      artist: "Bon Iver",         href: "https://open.spotify.com/track/4ww0eMBPmGP8xUNkCkrFfr" },
-  ]);
-});
-
-// ─── Render playlist (demo only) ─────────────────────────────────────────────
-function renderPlaylist(tracks) {
-  const resultsList = document.getElementById("results");
-  if (!resultsList) return;
-
-  if (!tracks?.length) {
-    resultsList.innerHTML = `<p style="color:var(--muted);font-size:13px;">No tracks found.</p>`;
-    return;
-  }
-
-  const list = document.createElement("div");
-  list.className = "track-list";
-
-  tracks.forEach((track, i) => {
-    const item = document.createElement("a");
-    item.className = "track-item";
-    item.href      = track.href ?? "#";
-    item.target    = "_blank";
-    item.rel       = "noopener noreferrer";
-    item.innerHTML = `
-      <span class="track-num">${i + 1}</span>
-      <div class="track-info">
-        <div class="track-name">${track.name}</div>
-        <div class="track-artist">${track.artist}</div>
-      </div>
-      <span class="track-link">Open ↗</span>
-    `;
-    list.appendChild(item);
-  });
-
-  resultsList.innerHTML = "";
-  resultsList.appendChild(list);
-  resultsList.scrollIntoView({ behavior: "smooth", block: "start" });
 }
