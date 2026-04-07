@@ -271,5 +271,5 @@ if __name__ == "__main__":
     TEST_IMAGES = [
         "https://www.theknot.com/tk-media/images/f2b93b5b-623e-42d4-a76e-8f38d4ed463a",
     ]
-    playlist, mood = run_pipeline(TEST_IMAGES)
+    playlist = run_pipeline(TEST_IMAGES)
     print_playlist(playlist)

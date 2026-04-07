@@ -1,0 +1,10 @@
+flask>=3.0
+flask-cors>=4.0
+python-dotenv>=1.0
+requests>=2.31
+torch>=2.0
+transformers>=4.40
+Pillow>=10.0
+colorthief>=0.2.1
+scikit-learn>=1.4
+numpy>=1.26

@@ -6,12 +6,7 @@ const FLASK_URL = "http://localhost:5000";
 const loginSection    = document.getElementById("login-section");
 const boardsSection   = document.getElementById("boards-section");
 const boardsContainer = document.getElementById("boards-container");
-const analyzeBtn      = document.getElementById("analyze-btn");
-const selectionCount  = document.getElementById("selection-count");
 const demoBtn         = document.getElementById("demo-btn");
-
-// ─── State ───────────────────────────────────────────────────────────────────
-const selectedBoards = new Set();
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 const sessionId = await initAuth();
@@ -65,7 +60,8 @@ async function loadBoards(sessionId) {
   }
 }
 
-// ─── Render boards ───────────────────────────────────────────────────────────
+// ─── Render boards ────────────────────────────────────────────────────────────
+// Each card navigates to board.html?id=BOARD_ID&name=BOARD_NAME
 function renderBoards(boards) {
   boardsContainer.innerHTML = "";
 
@@ -90,95 +86,30 @@ function renderBoards(boards) {
       </div>
     `;
 
-    card.addEventListener("click", () => toggleBoard(card, board.id));
+    card.addEventListener("click", () => {
+      const url = `board.html?id=${encodeURIComponent(board.id)}&name=${encodeURIComponent(board.name)}`;
+      window.location.href = url;
+    });
+
     boardsContainer.appendChild(card);
   });
 }
 
-// ─── Board selection ─────────────────────────────────────────────────────────
-function toggleBoard(card, id) {
-  if (selectedBoards.has(id)) {
-    selectedBoards.delete(id);
-    card.classList.remove("selected");
-  } else {
-    selectedBoards.add(id);
-    card.classList.add("selected");
-  }
-
-  const count = selectedBoards.size;
-
-  if (count > 0) {
-    analyzeBtn.classList.add("visible");
-    selectionCount.classList.add("visible");
-    selectionCount.textContent = `${count} board${count !== 1 ? "s" : ""} selected`;
-  } else {
-    analyzeBtn.classList.remove("visible");
-    selectionCount.classList.remove("visible");
-  }
-}
-
-// ─── Analyze ─────────────────────────────────────────────────────────────────
-analyzeBtn.addEventListener("click", async () => {
-  if (!selectedBoards.size) return;
-
-  analyzeBtn.innerHTML = `<div class="spinner"></div> Analyzing…`;
-  analyzeBtn.disabled = true;
-
-  try {
-    const imageUrls = await fetchAllPinImages([...selectedBoards]);
-    console.log(`Fetched ${imageUrls.length} images across ${selectedBoards.size} boards`);
-
-    const resp = await fetch(`${FLASK_URL}/analyze`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Session-ID": sessionId
-      },
-      body: JSON.stringify({ image_urls: imageUrls })
-    });
-
-    if (!resp.ok) throw new Error(`Analyze failed: HTTP ${resp.status}`);
-
-    const data = await resp.json();
-    console.log("analyze response:", data);
-    renderPlaylist(data.playlist);
-
-  } catch (err) {
-    console.error(err);
-    document.getElementById("results").innerHTML = `
-      <p style="color:var(--muted);font-size:13px;margin-top:16px;">
-        Something went wrong. Please try again.
-      </p>`;
-  } finally {
-    analyzeBtn.innerHTML = `Find my music
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-           stroke="currentColor" stroke-width="2.5"
-           stroke-linecap="round" stroke-linejoin="round">
-        <path d="M5 12h14M12 5l7 7-7 7"/>
-      </svg>`;
-    analyzeBtn.disabled = false;
-  }
+// ─── Demo ─────────────────────────────────────────────────────────────────────
+demoBtn?.addEventListener("click", () => {
+  renderPlaylist([
+    { name: "Holocene",        artist: "Bon Iver",         href: "https://open.spotify.com/track/7DfFc7a6Rwfi3YQMRbDMau" },
+    { name: "Motion Sickness", artist: "Phoebe Bridgers",  href: "https://open.spotify.com/track/2Co0IjcLTSHMtodwD4gzfg" },
+    { name: "Nuvole Bianche",  artist: "Ludovico Einaudi", href: "https://open.spotify.com/track/5l9c6bJmzvftumhz4TMPgk" },
+    { name: "Skinny Love",     artist: "Bon Iver",         href: "https://open.spotify.com/track/7oK9VyNzrYvRFo7nQEYkWN" },
+    { name: "Re: Stacks",      artist: "Bon Iver",         href: "https://open.spotify.com/track/4ww0eMBPmGP8xUNkCkrFfr" },
+  ]);
 });
 
-// ─── Fetch pin images ─────────────────────────────────────────────────────────
-async function fetchAllPinImages(boardIds) {
-  const allUrls = [];
-
-  for (const boardId of boardIds) {
-    const resp = await fetch(`${FLASK_URL}/pins/${boardId}`, {
-      headers: { "X-Session-ID": sessionId }
-    });
-    const data = await resp.json();
-    const urls = (data.pins ?? []).map(p => p.image_url).filter(Boolean);
-    allUrls.push(...urls);
-  }
-
-  return allUrls;
-}
-
-// ─── Render playlist ─────────────────────────────────────────────────────────
-export function renderPlaylist(tracks) {
+// ─── Render playlist (demo only) ─────────────────────────────────────────────
+function renderPlaylist(tracks) {
   const resultsList = document.getElementById("results");
+  if (!resultsList) return;
 
   if (!tracks?.length) {
     resultsList.innerHTML = `<p style="color:var(--muted);font-size:13px;">No tracks found.</p>`;
@@ -207,17 +138,5 @@ export function renderPlaylist(tracks) {
 
   resultsList.innerHTML = "";
   resultsList.appendChild(list);
-
-  // Scroll to results after playlist renders
   resultsList.scrollIntoView({ behavior: "smooth", block: "start" });
 }
-// ─── Demo ─────────────────────────────────────────────────────────────────────
-demoBtn?.addEventListener("click", () => {
-  renderPlaylist([
-    { name: "Holocene",        artist: "Bon Iver",         href: "https://open.spotify.com/track/7DfFc7a6Rwfi3YQMRbDMau" },
-    { name: "Motion Sickness", artist: "Phoebe Bridgers",  href: "https://open.spotify.com/track/2Co0IjcLTSHMtodwD4gzfg" },
-    { name: "Nuvole Bianche",  artist: "Ludovico Einaudi", href: "https://open.spotify.com/track/5l9c6bJmzvftumhz4TMPgk" },
-    { name: "Skinny Love",     artist: "Bon Iver",         href: "https://open.spotify.com/track/7oK9VyNzrYvRFo7nQEYkWN" },
-    { name: "Re: Stacks",      artist: "Bon Iver",         href: "https://open.spotify.com/track/4ww0eMBPmGP8xUNkCkrFfr" },
-  ]);
-});
