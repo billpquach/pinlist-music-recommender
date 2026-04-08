@@ -182,6 +182,7 @@ def score_all_tracks(recs: dict, mood: str) -> list[tuple]:
         track_id = href.split("/")[-1]   # from the ReccoBeats href field
         track_meta.append((name, artist, url, thumbnail, track_id))
         track_texts.append(f'A song called "{name}" by {artist}')
+        print(track_id)
 
     inputs = processor(
         text=track_texts,

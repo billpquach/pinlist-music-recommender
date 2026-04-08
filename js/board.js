@@ -1,4 +1,5 @@
 import { initAuth } from "./auth.js";
+import { initSpotifyAuth, isSpotifyConnected } from "./spotifyAuth.js";
 
 const FLASK_URL = "http://localhost:5000";
 
@@ -31,28 +32,7 @@ boardTitle.textContent = boardName;
 await loadPins();
 
 // ─── Spotify ──────────────────────────────────────────────────────────────────
-let spotifyConnected = false;
-
-// Listen for the callback popup signaling connection
-window.addEventListener("message", (e) => {
-  if (e.data === "spotify_connected") {
-    spotifyConnected = true;
-    const btn = document.getElementById("spotify-connect-btn");
-    if (btn) {
-      btn.textContent = "✓ Spotify connected";
-      btn.style.color = "#1DB954";
-      btn.style.borderColor = "#1DB954";
-      btn.style.cursor = "default";
-    }
-  }
-});
-
-document.getElementById("spotify-connect-btn")?.addEventListener("click", async () => {
-  if (spotifyConnected) return;
-  const resp = await fetch(`${FLASK_URL}/spotify/auth-url`);
-  const { url } = await resp.json();
-  window.open(url, "spotify_auth", "width=500,height=700");
-});
+initSpotifyAuth(sessionId);
 // ─── Load and render pins ─────────────────────────────────────────────────────
 async function loadPins() {
   pinsGrid.innerHTML = `<div class="spinner"></div>`;
@@ -225,7 +205,7 @@ function renderSpotifyButton(tracks, mood) {
   document.getElementById("playlist-body").after(wrap);
 
   document.getElementById("save-spotify-btn").addEventListener("click", async () => {
-    if (!spotifyConnected) {
+    if (!isSpotifyConnected()) {
       alert("Connect Spotify first using the button above.");
       return;
     }

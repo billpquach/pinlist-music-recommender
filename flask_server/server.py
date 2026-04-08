@@ -6,6 +6,7 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 from pinclip import run_pipeline
 import base64
+import json, base64 as b64
 
 load_dotenv()
 
@@ -28,7 +29,9 @@ token_store = {}
 
 SPOTIFY_CLIENT_ID     = os.getenv("SPOTIFY_CLIENT_ID")
 SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
-SPOTIFY_REDIRECT_URI  = os.getenv("SPOTIFY_REDIRECT_URI")
+SPOTIFY_REDIRECT_URI  = os.getenv("SPOTIFY_REDIRECT_URI",
+                                   "http://localhost:5500/spotify-callback.html")
+
 
 # Separate store for Spotify tokens — do not mix with Pinterest token_store
 spotify_token_store = {}
@@ -189,22 +192,29 @@ def analyze():
 # ─── Spotify Auth ─────────────────────────────────────────────────────────────────
 @app.route("/spotify/auth-url", methods=["GET"])
 def spotify_auth_url():
-    scopes = "playlist-modify-private playlist-modify-public"
+    session_id = request.args.get("session_id", "")   # ← add this
+    scopes = "playlist-modify-public"
     url = (
         "https://accounts.spotify.com/authorize"
         f"?client_id={SPOTIFY_CLIENT_ID}"
         f"&response_type=code"
         f"&redirect_uri={requests.utils.quote(SPOTIFY_REDIRECT_URI)}"
         f"&scope={requests.utils.quote(scopes)}"
+        f"&state={session_id}"                         # ← add this
     )
     return jsonify({"url": url})
 
-
+@app.route("/spotify/disconnect", methods=["POST"])
+def spotify_disconnect():
+    session_id = request.headers.get("X-Session-ID")
+    spotify_token_store.pop(session_id, None)
+    return jsonify({"ok": True})
 @app.route("/spotify/exchange-token", methods=["POST"])
 def spotify_exchange_token():
     code       = request.json.get("code")
     session_id = request.headers.get("X-Session-ID")
     if not code or not session_id:
+        print("Spotify token error:", resp.json())
         return jsonify({"error": "Missing code or session"}), 400
 
     credentials = base64.b64encode(
@@ -226,14 +236,33 @@ def spotify_exchange_token():
     if not resp.ok:
         return jsonify({"error": resp.json()}), resp.status_code
 
+    
+
+    def decode_spotify_token(token):
+        try:
+            payload = token.split(".")[1]
+            payload += "=" * (4 - len(payload) % 4)  # fix padding
+            decoded = json.loads(b64.b64decode(payload))
+            print("Token scopes:", decoded.get("scope", "NO SCOPE FIELD"))
+        except Exception as e:
+            print("Could not decode token:", e)
+
+    # call it right after storing:
     spotify_token_store[session_id] = resp.json()["access_token"]
+    decode_spotify_token(resp.json()["access_token"])
+
     return jsonify({"ok": True})
 
+    
 
 @app.route("/spotify/create-playlist", methods=["POST"])
 def create_spotify_playlist():
     session_id    = request.headers.get("X-Session-ID")
     spotify_token = spotify_token_store.get(session_id)
+    
+    print("Session ID received:", session_id)
+    print("Spotify token store keys:", list(spotify_token_store.keys()))
+    print("Token found:", bool(spotify_token))
 
     if not spotify_token:
         return jsonify({"error": "Spotify not connected", "needs_auth": True}), 401
@@ -254,35 +283,60 @@ def create_spotify_playlist():
     # Get Spotify user ID
     user_resp = requests.get("https://api.spotify.com/v1/me", headers=headers)
     if not user_resp.ok:
+        print("Spotify /me error:", user_resp.status_code, user_resp.json())
         spotify_token_store.pop(session_id, None)
         return jsonify({"error": "Spotify token expired", "needs_auth": True}), 401
 
     user_id = user_resp.json()["id"]
 
+    me_data = user_resp.json()
+    print("Full /me response:", me_data)
+    user_id = me_data["id"]
+
     # Create the playlist
     create_resp = requests.post(
-        f"https://api.spotify.com/v1/users/{user_id}/playlists",
+        "https://api.spotify.com/v1/me/playlists",  # ← change this
         headers=headers,
         json={
             "name":        f"{board_name} — by PinClip",
-            "public":      False,
+            "public":      True,
             "description": f"Generated from your Pinterest aesthetic ({mood}) by PinClip"
         }
     )
+    print("Create playlist request URL:", f"https://api.spotify.com/v1/users/{user_id}/playlists")
+    print("Create playlist request headers:", headers)
+    print("Create playlist status:", create_resp.status_code)
+    print("Create playlist response:", create_resp.json())
     if not create_resp.ok:
+        print("Spotify create playlist error:", create_resp.status_code, create_resp.json())
+        print("User ID was:", user_id)
+        print("Token used:", spotify_token[:20], "...")  # partial token for safety
         return jsonify({"error": create_resp.json()}), create_resp.status_code
+    
+    user_id = user_resp.json()["id"]
+    print("Spotify user ID:", user_id)
+    print("Creating playlist for user:", user_id)
 
     playlist_id = create_resp.json()["id"]
 
     # Add tracks
     track_uris = [f"spotify:track:{tid}" for tid in track_ids[:100]]
     add_resp = requests.post(
-        f"https://api.spotify.com/v1/playlists/{playlist_id}/tracks",
+        f"https://api.spotify.com/v1/playlists/{playlist_id}/items",
         headers=headers,
         json={"uris": track_uris}
     )
+    print("Add tracks status:", add_resp.status_code)
+    print("Add tracks response:", add_resp.json())
+    print("Track URIs being added:", track_uris)
+    # Replace the add tracks error block with:
     if not add_resp.ok:
-        return jsonify({"error": add_resp.json()}), add_resp.status_code
+        error_body = add_resp.json()
+        if add_resp.status_code == 403:
+            print("403 Forbidden — likely a scope issue.")
+            spotify_token_store.pop(session_id, None)
+            return jsonify({"error": error_body, "needs_auth": True}), 403
+        return jsonify({"error": error_body}), add_resp.status_code
 
     return jsonify({
         "playlist_id": playlist_id,

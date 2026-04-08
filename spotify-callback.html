@@ -21,36 +21,9 @@
 </head>
 <body>
   <p id="msg">Connecting Spotify…</p>
-  <script>
-    const FLASK_URL = "http://localhost:5000";
-    const code      = new URLSearchParams(window.location.search).get("code");
-    const sessionId = localStorage.getItem("pinclip_session_id");
-
-    (async () => {
-      if (!code || !sessionId) {
-        document.getElementById("msg").textContent = "Missing code or session — close and try again.";
-        return;
-      }
-      const resp = await fetch(`${FLASK_URL}/spotify/exchange-token`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Session-ID": sessionId
-        },
-        body: JSON.stringify({ code })
-      });
-
-      if (resp.ok) {
-        document.getElementById("msg").textContent = "Spotify connected ✓  You can close this tab.";
-        // If opened as a popup, signal parent and close
-        if (window.opener && !window.opener.closed) {
-          window.opener.postMessage("spotify_connected", "*");
-          setTimeout(() => window.close(), 1000);
-        }
-      } else {
-        document.getElementById("msg").textContent = "Failed — please try again.";
-      }
-    })();
+  <script type="module">
+    import { handleSpotifyCallback } from "./js/spotifyAuth.js";
+    handleSpotifyCallback();
   </script>
 </body>
 </html>
