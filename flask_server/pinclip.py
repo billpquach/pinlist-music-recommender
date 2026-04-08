@@ -179,9 +179,9 @@ def score_all_tracks(recs: dict, mood: str) -> list[tuple]:
             or track.get("album", {}).get("thumbnail")
             or ""
         )
-
+        track_id = href.split("/")[-1]   # from the ReccoBeats href field
+        track_meta.append((name, artist, url, thumbnail, track_id))
         track_texts.append(f'A song called "{name}" by {artist}')
-        track_meta.append((name, artist, url, thumbnail))
 
     inputs = processor(
         text=track_texts,
@@ -201,8 +201,8 @@ def score_all_tracks(recs: dict, mood: str) -> list[tuple]:
     scores      = (embeddings @ mood_vec).tolist()
 
     return [
-        (score, name, artist, url, thumbnail)
-        for score, (name, artist, url, thumbnail) in zip(scores, track_meta)
+        (score, name, artist, url, thumbnail, track_id)
+        for score, (name, artist, url, thumbnail, track_id) in zip(scores, track_meta)
     ]
 
 # ─── Playlist Filtering ───────────────────────────────────────────────────────
@@ -259,7 +259,7 @@ def run_pipeline(image_urls: list[str]) -> list[tuple]:
 
 def print_playlist(playlist: list[tuple]) -> None:
     print(f"\n🎵 Final Playlist ({len(playlist)} tracks)\n{'─'*48}")
-    for i, (score, name, artist, url, thumbnail) in enumerate(playlist, 1):
+    for i, (score, name, artist, url, thumbnail, track_id) in enumerate(playlist, 1):
         print(f"  {i:>2}. {name} — {artist}")
         print(f"      {url}")
         print(f"      similarity: {score:.3f}\n")

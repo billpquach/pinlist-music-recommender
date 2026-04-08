@@ -69,7 +69,7 @@ export async function exchangeCodeForToken(code) {
 
     // Store the session ID — every subsequent API call uses this
     // instead of exposing the raw access token in the browser
-    localStorage.setItem("pinlist_session_id", data.session_id);
+    localStorage.setItem("pinclip_session_id", data.session_id);
     return data.session_id;
 }
 
@@ -95,7 +95,7 @@ export async function initAuth() {
     }
 
     // Case 2: already authenticated from a previous visit
-    const existingSession = localStorage.getItem("pinlist_session_id");
+    const existingSession = localStorage.getItem("pinclip_session_id");
     if (existingSession) {
         return existingSession;
     }
@@ -107,12 +107,12 @@ export async function initAuth() {
 // ─── NEW: isAuthenticated — quick check without triggering a redirect ─────────
 
 export function isAuthenticated() {
-    return !!localStorage.getItem("pinlist_session_id");
+    return !!localStorage.getItem("pinclip_session_id");
 }
 
 // ─── NEW: logout ──────────────────────────────────────────────────────────────
 
 export function logout() {
-    localStorage.removeItem("pinlist_session_id");
+    localStorage.removeItem("pinclip_session_id");
     localStorage.removeItem("pinterest_oauth_state");
 }

@@ -100,6 +100,7 @@ function renderBoards(boards) {
 
     card.addEventListener("click", () => {
       const url = `board.html?id=${encodeURIComponent(board.id)}&name=${encodeURIComponent(board.name)}`;
+      window.history.pushState({}, document.title, window.location.href);
       window.location.href = url;
     });
 

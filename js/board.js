@@ -23,7 +23,6 @@ const moodBadgeWrap = document.getElementById("mood-badge-wrap");
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 const sessionId = await initAuth();
-
 if (!sessionId) {
   window.location.href = "index.html";
 }
@@ -31,6 +30,29 @@ if (!sessionId) {
 boardTitle.textContent = boardName;
 await loadPins();
 
+// ─── Spotify ──────────────────────────────────────────────────────────────────
+let spotifyConnected = false;
+
+// Listen for the callback popup signaling connection
+window.addEventListener("message", (e) => {
+  if (e.data === "spotify_connected") {
+    spotifyConnected = true;
+    const btn = document.getElementById("spotify-connect-btn");
+    if (btn) {
+      btn.textContent = "✓ Spotify connected";
+      btn.style.color = "#1DB954";
+      btn.style.borderColor = "#1DB954";
+      btn.style.cursor = "default";
+    }
+  }
+});
+
+document.getElementById("spotify-connect-btn")?.addEventListener("click", async () => {
+  if (spotifyConnected) return;
+  const resp = await fetch(`${FLASK_URL}/spotify/auth-url`);
+  const { url } = await resp.json();
+  window.open(url, "spotify_auth", "width=500,height=700");
+});
 // ─── Load and render pins ─────────────────────────────────────────────────────
 async function loadPins() {
   pinsGrid.innerHTML = `<div class="spinner"></div>`;
@@ -131,6 +153,7 @@ function renderPlaylist(tracks, mood) {
         <div class="empty-icon">🎵</div>
         <p>No tracks found for this board's mood.</p>
       </div>`;
+      // Show Save to Spotify button below the track list
     return;
   }
 
@@ -169,4 +192,93 @@ function renderPlaylist(tracks, mood) {
 
   playlistBody.innerHTML = "";
   playlistBody.appendChild(list);
+  renderSpotifyButton(tracks, mood);
+}
+
+
+
+function renderSpotifyButton(tracks, mood) {
+  // Remove any existing button
+  document.getElementById("spotify-action")?.remove();
+
+  const wrap = document.createElement("div");
+  wrap.id = "spotify-action";
+  wrap.style.cssText = "padding:16px 0 0;";
+
+  wrap.innerHTML = `
+    <button id="save-spotify-btn" style="
+      display:flex; align-items:center; justify-content:center; gap:8px;
+      width:100%; padding:14px;
+      background:#1DB954; color:#000;
+      border:none; border-radius:50px;
+      font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600;
+      cursor:pointer; transition:background 0.2s;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+      </svg>
+      Save playlist to Spotify
+    </button>
+    <div id="spotify-embed" style="margin-top:16px;display:none;"></div>
+  `;
+
+  // Append below the track list inside the playlist card
+  document.getElementById("playlist-body").after(wrap);
+
+  document.getElementById("save-spotify-btn").addEventListener("click", async () => {
+    if (!spotifyConnected) {
+      alert("Connect Spotify first using the button above.");
+      return;
+    }
+    await saveToSpotify(tracks, mood, wrap);
+  });
+}
+
+async function saveToSpotify(tracks, mood, wrap) {
+  const btn = document.getElementById("save-spotify-btn");
+  btn.disabled = true;
+  btn.textContent = "Creating playlist…";
+
+  try {
+    const resp = await fetch(`${FLASK_URL}/spotify/create-playlist`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Session-ID": sessionId
+      },
+      body: JSON.stringify({
+        track_ids:  tracks.map(t => t.track_id).filter(Boolean),
+        board_name: boardName,
+        mood
+      })
+    });
+
+    const data = await resp.json();
+
+    if (data.needs_auth) {
+      btn.disabled = false;
+      btn.textContent = "Connect Spotify first ↑";
+      return;
+    }
+
+    if (!resp.ok) throw new Error(data.error || "Failed");
+
+    // Replace button with embedded player
+    btn.style.display = "none";
+    const embedWrap = document.getElementById("spotify-embed");
+    embedWrap.style.display = "block";
+    embedWrap.innerHTML = `
+      <iframe
+        src="${data.embed_url}"
+        width="100%" height="380"
+        frameborder="0"
+        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+        style="border-radius:12px">
+      </iframe>
+    `;
+
+  } catch (err) {
+    console.error(err);
+    btn.disabled = false;
+    btn.textContent = "Try again";
+  }
 }
