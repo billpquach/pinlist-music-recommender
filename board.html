@@ -12,6 +12,24 @@
   />
   <link rel="stylesheet" href="css/style.css" />
   <style>
+    /* ── Board pins masonry (overrides global .pins-grid grid) ───── */
+    .pins-masonry {
+      display: block !important;
+      columns: 3 130px;
+      column-gap: var(--space-md);
+    }
+
+    .pins-masonry .pin-item {
+      break-inside: avoid;
+      margin-bottom: var(--space-md);
+      min-height: unset;
+    }
+
+    .pins-masonry .pin-item img {
+      height: auto;      /* natural image height — portrait images stay portrait */
+      width: 100%;
+    }
+
     /* ── Playlist card action row ──────────────────────────────────── */
     .playlist-action-row {
       display: flex;
@@ -56,6 +74,7 @@
       opacity: 0.45;
       transition: opacity 0.2s, color 0.2s, border-color 0.2s;
     }
+    
 
     #share-btn-inline.enabled,
     #share-btn-hero.enabled {
@@ -251,19 +270,72 @@
       color: var(--color-secondary-text);
     }
 
-    /* ── Share card (the actual card rendered + exported) ─────────── */
+    /* ── Share card ───────────────────────────────────────────────── */
     #share-card {
       background: var(--color-surface-soft);
-      border-radius: 18px;
+      border-radius: 22px;
       border: 1px solid var(--color-border);
       box-shadow: var(--shadow-card);
       overflow: hidden;
       font-family: 'Manrope', sans-serif;
       width: 100%;
+      transition: all 0.3s ease;
+    }
+
+    /* screenshot mode — full viewport, card fills height */
+    .screenshot-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(45,26,23,0.88);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 14px;
+      padding: 20px;
+    }
+
+    .screenshot-overlay.open {
+      display: flex;
+    }
+
+    .screenshot-overlay #share-card {
+      width: 100%;
+      max-width: 460px;
+      /* fill as much vertical space as possible */
+      max-height: calc(100vh - 100px);
+      overflow-y: auto;
+      box-shadow: 0 32px 64px rgba(0,0,0,0.5);
+      border-radius: 22px;
+    }
+
+    .screenshot-hint {
+      color: #fff;
+      font-size: 0.85rem;
+      text-align: center;
+      opacity: 0.8;
+      font-family: 'Manrope', sans-serif;
+    }
+
+    .screenshot-close {
+      color: #fff;
+      background: none;
+      border: 1px solid rgba(255,255,255,0.35);
+      border-radius: var(--radius-pill);
+      padding: 9px 24px;
+      font-family: 'Manrope', sans-serif;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .screenshot-close:hover {
+      background: rgba(255,255,255,0.1);
     }
 
     .sc-header {
-      padding: 14px 16px 10px;
+      padding: 18px 20px 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -273,7 +345,7 @@
 
     .sc-board-name {
       font-family: 'Playfair Display', serif;
-      font-size: 1rem;
+      font-size: 1.1rem;
       font-weight: 700;
       color: var(--color-ebony);
     }
@@ -286,8 +358,8 @@
     }
 
     .sc-mood-badge {
-      font-size: 0.7rem;
-      padding: 3px 10px;
+      font-size: 0.72rem;
+      padding: 4px 12px;
       border-radius: var(--radius-pill);
       background: rgba(248,131,120,0.15);
       border: 1px solid rgba(248,131,120,0.4);
@@ -295,22 +367,18 @@
       font-weight: 600;
     }
 
-    /* asymmetric pin collage */
+    /* collage — CSS columns masonry, height is natural */
     .sc-collage {
       width: 100%;
-      min-height: 180px;
-      position: relative;
-      background: var(--color-border);
-      overflow: hidden;
+      background: var(--color-surface-soft);
+      border-top: 1px solid var(--color-border);
+      border-bottom: 1px solid var(--color-border);
     }
 
-    /* polaroid/tape aesthetic for each pin */
+    /* individual pin in collage — styled inline by JS */
     .sc-pin {
-      position: absolute;
-      background: #fff;
-      padding: 5px 5px 18px;
-      box-shadow: 0 4px 14px rgba(45,26,23,0.18);
-      border-radius: 3px;
+      border-radius: 12px;
+      overflow: hidden;
     }
 
     .sc-pin img {
@@ -318,20 +386,6 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-    }
-
-    /* tape strip across top of each polaroid */
-    .sc-pin::before {
-      content: "";
-      position: absolute;
-      top: -6px;
-      left: 50%;
-      transform: translateX(-50%) rotate(-2deg);
-      width: 36px;
-      height: 14px;
-      background: rgba(252,181,167,0.65);
-      border-radius: 2px;
-      z-index: 2;
     }
 
     /* top songs section */
@@ -528,6 +582,27 @@
             </svg>
             Share
           </button>
+          <a href="explore.html" style="
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 12px 20px;
+          background: transparent;
+          color: var(--color-secondary-text);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 50px;
+          font-family: 'Manrope', sans-serif;
+          font-size: 14px;
+          text-decoration: none;
+          font-weight: 600;
+          transition: color 0.2s, border-color 0.2s;
+        " onmouseover="this.style.color='var(--color-accent)';this.style.borderColor='rgba(248,131,120,0.4)'"
+          onmouseout="this.style.color='var(--color-secondary-text)';this.style.borderColor='rgba(255,255,255,0.08)'">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          Explore
+        </a>
         </div>
       </section>
 
@@ -587,7 +662,7 @@
               Tap pins to add to share card
             </span>
           </div>
-          <div class="pins-grid" id="pins-grid">
+          <div class="pins-grid pins-masonry" id="pins-grid">
             <div style="color:var(--muted);font-size:13px;">Loading pins…</div>
           </div>
         </section>
@@ -660,7 +735,7 @@
       <div class="modal-footer">
         <button class="btn-outline btn-sm" id="modal-cancel">Cancel</button>
         <button class="btn-solid btn-sm" id="modal-download" disabled>
-          ↓ Download image
+          📸 Screenshot card
         </button>
         <button class="btn-solid btn-sm" id="modal-share-explore" disabled
           style="background:var(--color-accent-2);">
@@ -671,7 +746,11 @@
     </div>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- screenshot overlay -->
+  <div class="screenshot-overlay" id="screenshot-overlay">
+    <p class="screenshot-hint">📸 Screenshot now, then tap Close</p>
+    <button class="screenshot-close" id="screenshot-close">Close</button>
+  </div>
   <script type="module" src="js/board.js"></script>
 </body>
 </html>

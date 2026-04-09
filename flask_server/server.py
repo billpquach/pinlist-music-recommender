@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from pinclip import run_pipeline
 import base64
 import json, base64 as b64
+from db import init_db, save_card, get_feed
 
 load_dotenv()
 
@@ -31,7 +32,6 @@ SPOTIFY_CLIENT_ID     = os.getenv("SPOTIFY_CLIENT_ID")
 SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
 SPOTIFY_REDIRECT_URI  = os.getenv("SPOTIFY_REDIRECT_URI",
                                    "http://localhost:5500/spotify-callback.html")
-
 
 # Separate store for Spotify tokens — do not mix with Pinterest token_store
 spotify_token_store = {}
@@ -189,10 +189,12 @@ def analyze():
     except Exception as e:
         print(f"Pipeline error: {e}")
         return jsonify({"error": str(e)}), 500
-# ─── Spotify Auth ─────────────────────────────────────────────────────────────────
+
+# ─── Spotify Auth ─────────────────────────────────────────────────────────────
+
 @app.route("/spotify/auth-url", methods=["GET"])
 def spotify_auth_url():
-    session_id = request.args.get("session_id", "")   # ← add this
+    session_id = request.args.get("session_id", "")
     scopes = "playlist-modify-public"
     url = (
         "https://accounts.spotify.com/authorize"
@@ -200,21 +202,24 @@ def spotify_auth_url():
         f"&response_type=code"
         f"&redirect_uri={requests.utils.quote(SPOTIFY_REDIRECT_URI)}"
         f"&scope={requests.utils.quote(scopes)}"
-        f"&state={session_id}"                         # ← add this
+        f"&state={session_id}"
+        f"&show_dialog=true"
     )
     return jsonify({"url": url})
+
 
 @app.route("/spotify/disconnect", methods=["POST"])
 def spotify_disconnect():
     session_id = request.headers.get("X-Session-ID")
     spotify_token_store.pop(session_id, None)
     return jsonify({"ok": True})
+
+
 @app.route("/spotify/exchange-token", methods=["POST"])
 def spotify_exchange_token():
     code       = request.json.get("code")
     session_id = request.headers.get("X-Session-ID")
     if not code or not session_id:
-        print("Spotify token error:", resp.json())
         return jsonify({"error": "Missing code or session"}), 400
 
     credentials = base64.b64encode(
@@ -234,35 +239,18 @@ def spotify_exchange_token():
         }
     )
     if not resp.ok:
+        print("Spotify token error:", resp.json())
         return jsonify({"error": resp.json()}), resp.status_code
 
-    
-
-    def decode_spotify_token(token):
-        try:
-            payload = token.split(".")[1]
-            payload += "=" * (4 - len(payload) % 4)  # fix padding
-            decoded = json.loads(b64.b64decode(payload))
-            print("Token scopes:", decoded.get("scope", "NO SCOPE FIELD"))
-        except Exception as e:
-            print("Could not decode token:", e)
-
-    # call it right after storing:
     spotify_token_store[session_id] = resp.json()["access_token"]
-    decode_spotify_token(resp.json()["access_token"])
-
+    print(f"Spotify token stored for session {session_id}")
     return jsonify({"ok": True})
 
-    
 
 @app.route("/spotify/create-playlist", methods=["POST"])
 def create_spotify_playlist():
     session_id    = request.headers.get("X-Session-ID")
     spotify_token = spotify_token_store.get(session_id)
-    
-    print("Session ID received:", session_id)
-    print("Spotify token store keys:", list(spotify_token_store.keys()))
-    print("Token found:", bool(spotify_token))
 
     if not spotify_token:
         return jsonify({"error": "Spotify not connected", "needs_auth": True}), 401
@@ -283,19 +271,14 @@ def create_spotify_playlist():
     # Get Spotify user ID
     user_resp = requests.get("https://api.spotify.com/v1/me", headers=headers)
     if not user_resp.ok:
-        print("Spotify /me error:", user_resp.status_code, user_resp.json())
         spotify_token_store.pop(session_id, None)
         return jsonify({"error": "Spotify token expired", "needs_auth": True}), 401
 
     user_id = user_resp.json()["id"]
 
-    me_data = user_resp.json()
-    print("Full /me response:", me_data)
-    user_id = me_data["id"]
-
     # Create the playlist
     create_resp = requests.post(
-        "https://api.spotify.com/v1/me/playlists",  # ← change this
+        "https://api.spotify.com/v1/me/playlists",
         headers=headers,
         json={
             "name":        f"{board_name} — by PinClip",
@@ -303,37 +286,22 @@ def create_spotify_playlist():
             "description": f"Generated from your Pinterest aesthetic ({mood}) by PinClip"
         }
     )
-    print("Create playlist request URL:", f"https://api.spotify.com/v1/users/{user_id}/playlists")
-    print("Create playlist request headers:", headers)
-    print("Create playlist status:", create_resp.status_code)
-    print("Create playlist response:", create_resp.json())
     if not create_resp.ok:
-        print("Spotify create playlist error:", create_resp.status_code, create_resp.json())
-        print("User ID was:", user_id)
-        print("Token used:", spotify_token[:20], "...")  # partial token for safety
+        print("Create playlist error:", create_resp.status_code, create_resp.json())
         return jsonify({"error": create_resp.json()}), create_resp.status_code
-    
-    user_id = user_resp.json()["id"]
-    print("Spotify user ID:", user_id)
-    print("Creating playlist for user:", user_id)
 
     playlist_id = create_resp.json()["id"]
 
-    # Add tracks
-    track_uris = [f"spotify:track:{tid}" for tid in track_ids[:100]]
+    # Add tracks — /items is the correct current endpoint
+    track_uris = [f"spotify:track:{tid}" for tid in track_ids[:100] if tid]
     add_resp = requests.post(
         f"https://api.spotify.com/v1/playlists/{playlist_id}/items",
         headers=headers,
         json={"uris": track_uris}
     )
-    print("Add tracks status:", add_resp.status_code)
-    print("Add tracks response:", add_resp.json())
-    print("Track URIs being added:", track_uris)
-    # Replace the add tracks error block with:
     if not add_resp.ok:
         error_body = add_resp.json()
         if add_resp.status_code == 403:
-            print("403 Forbidden — likely a scope issue.")
             spotify_token_store.pop(session_id, None)
             return jsonify({"error": error_body, "needs_auth": True}), 403
         return jsonify({"error": error_body}), add_resp.status_code
@@ -343,7 +311,53 @@ def create_spotify_playlist():
         "embed_url":   f"https://open.spotify.com/embed/playlist/{playlist_id}"
     })
 
+# ─── Explore ──────────────────────────────────────────────────────────────────
+
+@app.route("/explore/feed", methods=["GET"])
+def explore_feed():
+    try:
+        limit  = int(request.args.get("limit",  20))
+        offset = int(request.args.get("offset",  0))
+        cards  = get_feed(limit=limit, offset=offset)
+        return jsonify({"cards": cards, "offset": offset, "limit": limit})
+    except Exception as e:
+        print(f"Explore feed error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/explore/save", methods=["POST"])
+def explore_save():
+    session_id   = request.headers.get("X-Session-ID")
+    access_token = token_store.get(session_id)
+    if not access_token:
+        return jsonify({"error": "Not authenticated"}), 401
+
+    body       = request.json or {}
+    board_name = body.get("board_name", "").strip()
+    mood       = body.get("mood",       "").strip()
+    pin_images = body.get("pin_images", [])
+    tracks     = body.get("tracks",     [])
+    playlist_id = body.get("playlist_id", None)
+
+    if not board_name or not pin_images or not tracks:
+        return jsonify({"error": "Missing board_name, pin_images, or tracks"}), 400
+
+    try:
+        row_id = save_card(
+            board_name=board_name,
+            mood=mood,
+            pin_images=pin_images[:12],
+            tracks=tracks[:4],
+            playlist_id=playlist_id,
+        )
+        return jsonify({"ok": True, "id": row_id})
+    except Exception as e:
+        print(f"Explore save error: {e}")
+        return jsonify({"error": str(e)}), 500
+
 # ─── Entry Point ──────────────────────────────────────────────────────────────
+
+init_db()
 
 if __name__ == "__main__":
     app.run(port=5000, debug=True)

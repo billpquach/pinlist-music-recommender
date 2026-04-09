@@ -346,7 +346,29 @@
           <div class="board-stack" id="board-stack" style="display:none;"></div>
         </div>
       </section>
-
+      <!-- ── Explore community link ─────────────────────────────────── -->
+      <a href="explore.html" style="
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--space-lg) var(--space-xl);
+        background: var(--color-surface);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--color-border);
+        box-shadow: var(--shadow-soft);
+        text-decoration: none;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      " onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 25px 45px rgba(48,31,25,0.18)'"
+        onmouseout="this.style.transform='';this.style.boxShadow=''">
+        <div>
+          <p style="margin:0 0 2px;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.22em;color:var(--color-secondary-text);">Community</p>
+          <p style="margin:0;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--color-ebony);">Explore community boards</p>
+          <p style="margin:4px 0 0;font-size:0.85rem;color:var(--color-secondary-text);">Browse playlists generated from real Pinterest boards.</p>
+        </div>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </a>
       <!-- ── How it works ───────────────────────────────────────────── -->
       <div class="how-strip">
         <div class="how-step">
