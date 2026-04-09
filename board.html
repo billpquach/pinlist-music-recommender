@@ -11,6 +11,480 @@
     rel="stylesheet"
   />
   <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* ── Playlist card action row ──────────────────────────────────── */
+    .playlist-action-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding: var(--space-md) var(--space-lg) 0;
+      flex-wrap: wrap;
+    }
+
+    #save-spotify-btn-inline {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 16px;
+      background: #1DB954;
+      color: #000;
+      border: none;
+      border-radius: var(--radius-pill);
+      font-family: 'Manrope', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    #save-spotify-btn-inline:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    #share-btn-inline,
+    #share-btn-hero {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 16px;
+      background: transparent;
+      color: var(--color-secondary-text);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-pill);
+      font-family: 'Manrope', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: not-allowed;
+      opacity: 0.45;
+      transition: opacity 0.2s, color 0.2s, border-color 0.2s;
+    }
+
+    #share-btn-inline.enabled,
+    #share-btn-hero.enabled {
+      cursor: pointer;
+      opacity: 1;
+      color: var(--color-accent);
+      border-color: var(--color-accent);
+    }
+
+    /* spotify embed area inside playlist card */
+    #spotify-embed {
+      padding: 0 var(--space-lg) var(--space-md);
+    }
+
+    /* ── Pin selection overlay ─────────────────────────────────────── */
+    .pin-item {
+      position: relative;
+      cursor: default;
+    }
+
+    .pin-item.selectable { cursor: pointer; }
+
+    .pin-item.selectable::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: var(--radius-md);
+      border: 2.5px solid transparent;
+      transition: border-color 0.15s, background 0.15s;
+      pointer-events: none;
+    }
+
+    .pin-item.selectable:hover::after {
+      border-color: var(--color-accent);
+      background: rgba(248,131,120,0.08);
+    }
+
+    .pin-item.selected::after {
+      border-color: var(--color-accent) !important;
+      background: rgba(248,131,120,0.18) !important;
+    }
+
+    .pin-item .pin-check {
+      display: none;
+      position: absolute;
+      top: 6px; right: 6px;
+      width: 22px; height: 22px;
+      background: var(--color-accent);
+      border-radius: 50%;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      z-index: 2;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    .pin-item.selected .pin-check { display: flex; }
+
+    /* ── Share modal ───────────────────────────────────────────────── */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(45, 26, 23, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-lg);
+    }
+
+    .modal-backdrop.open { display: flex; }
+
+    .modal {
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--color-border);
+      box-shadow: var(--shadow-card);
+      width: 100%;
+      max-width: 860px;
+      max-height: 90vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-lg);
+      padding: var(--space-xl);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .modal-header h2 { margin: 0; font-size: 1.4rem; }
+    .modal-header p  { margin: 4px 0 0; font-size: 0.88rem; color: var(--color-secondary-text); }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.4rem;
+      cursor: pointer;
+      color: var(--color-secondary-text);
+      line-height: 1;
+      padding: 0;
+    }
+
+    .modal-body {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: var(--space-xl);
+      align-items: start;
+    }
+
+    /* left: pin selector */
+    .modal-pin-selector h4 {
+      margin: 0 0 var(--space-md);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--color-secondary-text);
+    }
+
+    .modal-pins-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+      gap: 8px;
+      max-height: 420px;
+      overflow-y: auto;
+    }
+
+    .modal-pin-item {
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+      aspect-ratio: 1;
+      background: var(--color-surface-soft);
+      transition: transform 0.15s;
+    }
+
+    .modal-pin-item img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .modal-pin-item::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border: 2.5px solid transparent;
+      border-radius: var(--radius-sm);
+      transition: border-color 0.15s, background 0.15s;
+      pointer-events: none;
+    }
+
+    .modal-pin-item:hover::after {
+      border-color: var(--color-accent);
+      background: rgba(248,131,120,0.1);
+    }
+
+    .modal-pin-item.selected::after {
+      border-color: var(--color-accent);
+      background: rgba(248,131,120,0.2);
+    }
+
+    .modal-pin-item .pin-num {
+      display: none;
+      position: absolute;
+      top: 4px; right: 4px;
+      width: 20px; height: 20px;
+      background: var(--color-accent);
+      border-radius: 50%;
+      font-size: 10px;
+      font-weight: 700;
+      color: #fff;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+    }
+
+    .modal-pin-item.selected .pin-num { display: flex; }
+
+    /* right: share card preview */
+    .modal-preview-col h4 {
+      margin: 0 0 var(--space-md);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--color-secondary-text);
+    }
+
+    /* ── Share card (the actual card rendered + exported) ─────────── */
+    #share-card {
+      background: var(--color-surface-soft);
+      border-radius: 18px;
+      border: 1px solid var(--color-border);
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+      font-family: 'Manrope', sans-serif;
+      width: 100%;
+    }
+
+    .sc-header {
+      padding: 14px 16px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .sc-header-left { display: flex; flex-direction: column; gap: 2px; }
+
+    .sc-board-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--color-ebony);
+    }
+
+    .sc-made-with {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--color-secondary-text);
+    }
+
+    .sc-mood-badge {
+      font-size: 0.7rem;
+      padding: 3px 10px;
+      border-radius: var(--radius-pill);
+      background: rgba(248,131,120,0.15);
+      border: 1px solid rgba(248,131,120,0.4);
+      color: var(--color-accent);
+      font-weight: 600;
+    }
+
+    /* asymmetric pin collage */
+    .sc-collage {
+      width: 100%;
+      min-height: 180px;
+      position: relative;
+      background: var(--color-border);
+      overflow: hidden;
+    }
+
+    /* polaroid/tape aesthetic for each pin */
+    .sc-pin {
+      position: absolute;
+      background: #fff;
+      padding: 5px 5px 18px;
+      box-shadow: 0 4px 14px rgba(45,26,23,0.18);
+      border-radius: 3px;
+    }
+
+    .sc-pin img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* tape strip across top of each polaroid */
+    .sc-pin::before {
+      content: "";
+      position: absolute;
+      top: -6px;
+      left: 50%;
+      transform: translateX(-50%) rotate(-2deg);
+      width: 36px;
+      height: 14px;
+      background: rgba(252,181,167,0.65);
+      border-radius: 2px;
+      z-index: 2;
+    }
+
+    /* top songs section */
+    .sc-top-songs {
+      padding: 10px 14px 8px;
+      border-top: 1px solid var(--color-border);
+    }
+
+    .sc-top-songs-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      color: var(--color-secondary-text);
+      margin-bottom: 8px;
+    }
+
+    .sc-tracks {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .sc-track {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--color-surface);
+      border-radius: 8px;
+      padding: 5px 7px;
+      border: 1px solid var(--color-border);
+    }
+
+    .sc-track img {
+      width: 28px; height: 28px;
+      border-radius: 5px;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+
+    .sc-track-info { min-width: 0; }
+
+    .sc-track-name {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--color-ebony);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sc-track-artist {
+      font-size: 0.62rem;
+      color: var(--color-secondary-text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* card footer — explore-only (hidden when downloading) */
+    .sc-footer {
+      padding: 8px 14px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .sc-pinclip-brand {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--color-accent);
+      letter-spacing: 0.05em;
+    }
+
+    .sc-explore-tag {
+      font-size: 0.65rem;
+      color: var(--color-secondary-text);
+    }
+
+    /* track swap UI */
+    .track-swap-list {
+      margin-top: var(--space-md);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .track-swap-list h4 {
+      margin: 0 0 8px;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--color-secondary-text);
+    }
+
+    .swap-track {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--color-border);
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      font-size: 0.82rem;
+    }
+
+    .swap-track.active {
+      border-color: var(--color-accent);
+      background: rgba(248,131,120,0.08);
+    }
+
+    .swap-track img {
+      width: 30px; height: 30px;
+      border-radius: 5px;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+
+    .swap-track-info { flex: 1; min-width: 0; }
+    .swap-track-name   { font-weight: 700; color: var(--color-ebony); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .swap-track-artist { font-size: 0.75rem; color: var(--color-secondary-text); }
+
+    .swap-check {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      border: 1.5px solid var(--color-border);
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px;
+    }
+
+    .swap-track.active .swap-check {
+      background: var(--color-accent);
+      border-color: var(--color-accent);
+      color: #fff;
+    }
+
+    /* modal footer actions */
+    .modal-footer {
+      display: flex;
+      gap: var(--space-md);
+      justify-content: flex-end;
+      padding-top: var(--space-md);
+      border-top: 1px solid var(--color-border);
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 700px) {
+      .modal-body {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="page-shell">
@@ -38,12 +512,21 @@
             padding:12px 20px;
             background:transparent; color:#ede8e3;
             border:1px solid rgba(255,255,255,0.08); border-radius:50px;
-            font-family:'DM Sans',sans-serif; font-size:14px;
+            font-family:'Manrope',sans-serif; font-size:14px;
             cursor:pointer;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="#1DB954">
               <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
             </svg>
             Connect Spotify
+          </button>
+          <!-- greyed share button in hero -->
+          <button id="share-btn-hero">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+            Share
           </button>
         </div>
       </section>
@@ -59,15 +542,38 @@
           <div class="playlist-card">
             <div class="playlist-card-header">
               <h3>Pin to playlist</h3>
-              <p id="playlist-meta">Select a board and tap “Find music”.</p>
+              <p id="playlist-meta">Select a board and tap "Find music".</p>
             </div>
+
+            <!-- mood badge row -->
             <div id="mood-badge-wrap" class="mood-badge-row"></div>
+
+            <!-- action row: save to spotify + share (appear after analysis) -->
+            <div class="playlist-action-row" id="playlist-action-row" style="display:none;">
+              <button id="save-spotify-btn-inline" disabled>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+                </svg>
+                Save to Spotify
+              </button>
+              <button id="share-btn-inline">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                </svg>
+                Share
+              </button>
+            </div>
+
             <div id="playlist-body">
               <div class="playlist-empty">
                 <div class="empty-icon">🎵</div>
                 <p>Your bespoke playlist will appear once PinClip reads the mood.</p>
               </div>
             </div>
+
+            <div id="spotify-embed"></div>
           </div>
         </section>
 
@@ -77,7 +583,9 @@
               <p class="eyebrow">pins</p>
               <h2>Textures, captions, and color stories</h2>
             </div>
-            <span class="section-meta">Auto-refreshes at every pin</span>
+            <span class="section-meta" id="select-hint" style="display:none;">
+              Tap pins to add to share card
+            </span>
           </div>
           <div class="pins-grid" id="pins-grid">
             <div style="color:var(--muted);font-size:13px;">Loading pins…</div>
@@ -85,11 +593,85 @@
         </section>
       </div>
     </main>
+
     <footer class="footer">
       <span>© 2026 PinClip by Bill Quach</span>
       <a href="privacy.html">Privacy policy</a>
     </footer>
   </div>
+
+  <!-- ── Share modal ──────────────────────────────────────────────────── -->
+  <div class="modal-backdrop" id="share-modal">
+    <div class="modal">
+
+      <div class="modal-header">
+        <div>
+          <h2>Create your share card</h2>
+          <p>Select 2–12 pins from the board, then pick your top 4 tracks.</p>
+        </div>
+        <button class="modal-close" id="modal-close">✕</button>
+      </div>
+
+      <div class="modal-body">
+
+        <!-- left: pin picker + track swap -->
+        <div class="modal-pin-selector">
+          <h4>Select pins <span id="pin-sel-count" style="color:var(--color-accent);">0 / 12</span></h4>
+          <div class="modal-pins-grid" id="modal-pins-grid"></div>
+
+          <div class="track-swap-list" id="track-swap-list">
+            <h4>Top songs — tap to swap</h4>
+            <!-- populated by JS -->
+          </div>
+        </div>
+
+        <!-- right: live preview -->
+        <div class="modal-preview-col">
+          <h4>Preview</h4>
+
+          <div id="share-card">
+            <div class="sc-header">
+              <div class="sc-header-left">
+                <span class="sc-board-name" id="sc-board-name">Board</span>
+                <span class="sc-made-with">made with PinClip</span>
+              </div>
+              <span class="sc-mood-badge" id="sc-mood-badge">mood</span>
+            </div>
+
+            <div class="sc-collage" id="sc-collage">
+              <!-- polaroid pins injected by JS -->
+            </div>
+
+            <div class="sc-top-songs">
+              <div class="sc-top-songs-label">Top Songs</div>
+              <div class="sc-tracks" id="sc-tracks">
+                <!-- 4 track pills injected by JS -->
+              </div>
+            </div>
+
+            <div class="sc-footer">
+              <span class="sc-pinclip-brand">PinClip</span>
+              <span class="sc-explore-tag">pinclip.app/explore</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-outline btn-sm" id="modal-cancel">Cancel</button>
+        <button class="btn-solid btn-sm" id="modal-download" disabled>
+          ↓ Download image
+        </button>
+        <button class="btn-solid btn-sm" id="modal-share-explore" disabled
+          style="background:var(--color-accent-2);">
+          Share to Explore
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script type="module" src="js/board.js"></script>
 </body>
 </html>
