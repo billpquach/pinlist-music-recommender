@@ -11,78 +11,360 @@
     rel="stylesheet"
   />
   <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* ── Home-specific styles ─────────────────────────────────────── */
+
+    .home-hero {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: var(--space-xxl);
+      align-items: center;
+      background: var(--color-surface-soft);
+      border-radius: var(--radius-lg);
+      padding: var(--space-xxl);
+      border: 1px solid var(--color-border);
+      box-shadow: var(--shadow-card);
+      min-height: 520px;
+    }
+
+    .home-hero-text h1 span { color: var(--color-accent); }
+
+    .home-hero-text .hero-subhead {
+      font-size: 1.1rem;
+      max-width: 624px;
+      margin-top: var(--space-sm);
+    }
+
+    .home-hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-md);
+      margin-top: var(--space-lg);
+    }
+
+    /* mood strip shown when not authed */
+    .mood-strip {
+      margin-top: var(--space-lg);
+      padding: var(--space-md) var(--space-lg);
+      background: var(--color-surface);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-lg);
+    }
+
+    .mood-strip-label { font-size: 0.85rem; color: var(--color-secondary-text); }
+    .mood-strip-copy  { font-size: 0.95rem; font-weight: 600; color: var(--color-ebony); }
+
+    .mood-strip-badges {
+      display: flex;
+      gap: var(--space-sm);
+      flex-wrap: wrap;
+    }
+
+    /* ── Jam panel (right column) ────────────────────────────────── */
+
+    .jam-panel {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+
+    .jam-panel-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .jam-panel-heading h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      margin: 0;
+    }
+
+    .jam-panel-heading a {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--color-accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    /* stacked card stack — vertical fan so all 3 are visible + clickable */
+    .board-stack {
+      position: relative;
+      /* tall enough to show all 3 cards with offsets */
+      height: 400px;
+    }
+
+    .board-stack-card {
+      position: absolute;
+      left: 0;
+      right: 0;
+      border-radius: var(--radius-md);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      box-shadow: var(--shadow-soft);
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1),
+                  box-shadow 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* card 1 = top/front */
+    .board-stack-card:nth-child(1) {
+      top: 0;
+      z-index: 3;
+    }
+
+    /* card 2 = middle, peeking 56px below card 1 */
+    .board-stack-card:nth-child(2) {
+      top: 100px;
+      z-index: 2;
+      transform: scale(0.97);
+      transform-origin: top center;
+      filter: brightness(0.96);
+    }
+
+    /* card 3 = back, peeking 112px below card 1 */
+    .board-stack-card:nth-child(3) {
+      top: 200px;
+      z-index: 1;
+      transform: scale(0.94);
+      transform-origin: top center;
+      filter: brightness(0.92);
+    }
+
+    /* hover: fan out a touch more so cards feel interactive */
+    .board-stack-card:nth-child(1):hover {
+      transform: translateY(-4px);
+      box-shadow: 0 28px 50px rgba(48,31,25,0.22);
+    }
+    .board-stack-card:nth-child(2):hover {
+      transform: scale(0.97) translateY(-4px);
+      box-shadow: 0 22px 40px rgba(48,31,25,0.18);
+      filter: brightness(1);
+    }
+    .board-stack-card:nth-child(3):hover {
+      transform: scale(0.94) translateY(-4px);
+      box-shadow: 0 18px 35px rgba(48,31,25,0.15);
+      filter: brightness(1);
+    }
+
+    /* board name + pin count ABOVE the mosaic */
+    .stack-card-meta {
+      padding: 10px var(--space-md) 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .stack-card-meta h4 {
+      margin: 0;
+      font-family: 'Playfair Display', serif;
+      font-size: 0.95rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 200px;
+    }
+
+    .stack-card-meta span {
+      font-size: 0.78rem;
+      color: var(--color-secondary-text);
+      white-space: nowrap;
+    }
+
+    /* pin mosaic inside each card */
+    .stack-pin-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      height: 160px;
+      gap: 2px;
+    }
+
+    .stack-pin-grid img,
+    .stack-pin-grid div {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .stack-pin-grid .pin-hero { grid-row: 1 / 3; }
+
+    /* placeholder state (not authed) */
+    .jam-panel-placeholder {
+      height: 320px;
+      border-radius: var(--radius-md);
+      border: 1.5px dashed var(--color-border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-sm);
+      color: var(--color-secondary-text);
+      font-size: 0.9rem;
+      text-align: center;
+      padding: var(--space-xl);
+    }
+
+    .jam-panel-placeholder .placeholder-icon {
+      font-size: 2rem;
+      opacity: 0.5;
+    }
+
+    /* loading skeleton */
+    .stack-skeleton {
+      height: 320px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(
+        90deg,
+        var(--color-surface-soft) 25%,
+        var(--color-border) 50%,
+        var(--color-surface-soft) 75%
+      );
+      background-size: 200% 100%;
+      animation: shimmer-slide 1.4s infinite;
+    }
+
+    @keyframes shimmer-slide {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* how it works strip */
+    .how-strip {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-md);
+    }
+
+    .how-step {
+      background: var(--color-surface);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border);
+      padding: var(--space-lg);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+
+    .how-step-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      color: var(--color-accent);
+      line-height: 1;
+    }
+
+    .how-step h4 {
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    .how-step p {
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    /* responsive */
+    @media (max-width: 860px) {
+      .home-hero {
+        grid-template-columns: 1fr;
+        min-height: unset;
+        
+      }
+
+      .board-stack { height: 380px; }
+
+      .how-strip {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="page-shell">
     <div class="ambient-grid"></div>
     <main class="app-shell">
-    <section class="hero" id="login-section">
-        <div class="hero-text">
+
+      <!-- ── Hero ──────────────────────────────────────────────────── -->
+      <section class="home-hero">
+
+        <!-- Left: text + CTA -->
+        <div class="home-hero-text">
           <p class="eyebrow">visual taste → bespoke playlists</p>
-          <h1>
-            Pin<span>Clip</span>
-          </h1>
+          <h1>Pin<span>Clip</span></h1>
           <p class="hero-subhead">
-            We read the colors, textures, and energy of your Pinterest boards and translate that
-            vibe into a playlist that sounds like you.
+            We read the colors, textures, and energy of your Pinterest boards
+            and translate that vibe into a playlist that sounds like you.
           </p>
-          <div class="hero-actions">
-            <button class="btn-solid" id="login-btn">
-              <span>Connect Pinterest</span>
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M5 12h14M12 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+
+          <div class="home-hero-actions">
+            <!-- changes to "Go to my boards" when authed -->
+            <button class="btn-solid" id="cta-btn">
+              <span id="cta-label">Connect Pinterest</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true" width="16" height="16">
+                <path d="M5 12h14M12 5l7 7-7 7" fill="none" stroke="currentColor"
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </button>
-            <button class="btn-outline">Preview a mood</button>
           </div>
-          <div class="hero-mood">
+
+          <!-- mood strip — hidden until authed -->
+          <div class="mood-strip" id="mood-strip" style="display:none;">
             <div>
-              <p class="mood-label">Your board feels like</p>
-              <p class="mood-copy">an evening rooftop session with vinyl crackle.</p>
+              <p class="mood-strip-label">Your boards feel like</p>
+              <p class="mood-strip-copy" id="mood-copy">…</p>
             </div>
-            <div class="hero-mood-badges">
-              <span class="mood-badge">Sun-soaked</span>
-              <span class="mood-badge">Soft synth</span>
-              <span class="mood-badge">Warm rhythm</span>
-            </div>
+            <div class="mood-strip-badges" id="mood-badges"></div>
           </div>
         </div>
-        <div class="hero-panel">
-          <div class="proof-tag">Hackathon mode · Gen Z ready</div>
-          <div class="hero-card">
-            <p class="hero-card-label">Latest board</p>
-            <h3>Daydream Interiors</h3>
-            <p class="hero-card-copy">
-              Pink terrazzo, sculptural lighting, and slow-motion coffee rituals.
-            </p>
-            <div class="hero-card-mood">
-              <span class="mood-chip">dreamy</span>
-              <span class="mood-chip">tactile</span>
-            </div>
-            <div class="hero-card-details">
-              <div>
-                <p class="hero-card-title">Playlist</p>
-                <p class="hero-card-value">14 tracks · 42 min</p>
-              </div>
-              <div>
-                <p class="hero-card-title">Energy</p>
-                <p class="hero-card-value">68 · mellow glow</p>
-              </div>
-            </div>
+
+        <!-- Right: Jam with your boards panel -->
+        <div class="jam-panel">
+          <div class="jam-panel-heading">
+            <h3>Jam with your boards!</h3>
+            <a href="boardList.html" id="see-all-link" style="display:none;">See all →</a>
           </div>
+
+          <!-- shown when not authed -->
+          <div class="jam-panel-placeholder" id="jam-placeholder">
+            <div class="placeholder-icon">📌</div>
+            <p>Connect Pinterest to see your boards here.</p>
+          </div>
+
+          <!-- loading state -->
+          <div class="stack-skeleton" id="jam-loading" style="display:none;"></div>
+
+          <!-- stacked cards — populated by JS -->
+          <div class="board-stack" id="board-stack" style="display:none;"></div>
         </div>
       </section>
 
-      <section class="section board-selection" id="boards-section">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">board selection</p>
-            <h2>Choose a board and let PinClip read the room.</h2>
-          </div>
-          <button class="btn-link">View all boards</button>
+      <!-- ── How it works ───────────────────────────────────────────── -->
+      <div class="how-strip">
+        <div class="how-step">
+          <span class="how-step-num">01</span>
+          <h4>Connect your Pinterest</h4>
+          <p>Securely link your account — PinClip only reads your boards, never posts.</p>
         </div>
-        <div class="board-grid" id="boards-container"></div>
-      </section>
+        <div class="how-step">
+          <span class="how-step-num">02</span>
+          <h4>Pick a board</h4>
+          <p>Choose any board and our CLIP model reads the colors, textures, and energy of your pins.</p>
+        </div>
+        <div class="how-step">
+          <span class="how-step-num">03</span>
+          <h4>Get your playlist</h4>
+          <p>A bespoke mix matched to your board's mood — save it straight to Spotify.</p>
+        </div>
+      </div>
 
     </main>
     <footer class="footer">
@@ -90,6 +372,161 @@
       <a href="privacy.html">Privacy policy</a>
     </footer>
   </div>
-  <script type="module" src="js/main.js"></script>
+
+  <script type="module">
+    import { initAuth, redirectToPinterestAuth, isAuthenticated } from "./js/auth.js";
+
+    const FLASK_URL = "http://localhost:5000";
+
+    const ctaBtn      = document.getElementById("cta-btn");
+    const ctaLabel    = document.getElementById("cta-label");
+    const moodStrip   = document.getElementById("mood-strip");
+    const moodCopy    = document.getElementById("mood-copy");
+    const moodBadges  = document.getElementById("mood-badges");
+    const placeholder = document.getElementById("jam-placeholder");
+    const loading     = document.getElementById("jam-loading");
+    const stack       = document.getElementById("board-stack");
+    const seeAllLink  = document.getElementById("see-all-link");
+
+    // Mood copy pool — shown randomly when authed
+    const MOOD_COPIES = [
+      "a sun-drenched afternoon with soft synths.",
+      "an evening rooftop session with vinyl crackle.",
+      "golden hour textures and slow, warm bass.",
+      "misty mornings and acoustic reverb.",
+      "coastal light and breezy, unhurried rhythms.",
+    ];
+
+    const MOOD_BADGE_SETS = [
+      ["Sun-soaked", "Soft synth", "Warm rhythm"],
+      ["Rooftop", "Vinyl", "Late evening"],
+      ["Golden hour", "Ambient", "Slow bass"],
+      ["Misty", "Acoustic", "Reverb"],
+      ["Coastal", "Breezy", "Unhurried"],
+    ];
+
+    async function init() {
+      const sessionId = await initAuth();
+
+      if (!sessionId) {
+        // Not authed — wire up login button
+        ctaBtn.addEventListener("click", redirectToPinterestAuth);
+        return;
+      }
+
+      // Authed state
+      ctaLabel.textContent = "Go to my boards";
+      ctaBtn.addEventListener("click", () => {
+        window.location.href = "boardList.html";
+      });
+
+      // Show see-all link
+      seeAllLink.style.display = "inline";
+
+      // Show mood strip with random copy
+      const idx = Math.floor(Math.random() * MOOD_COPIES.length);
+      moodCopy.textContent = MOOD_COPIES[idx];
+      MOOD_BADGE_SETS[idx].forEach(label => {
+        const span = document.createElement("span");
+        span.className = "mood-badge";
+        span.textContent = label;
+        moodBadges.appendChild(span);
+      });
+      moodStrip.style.display = "flex";
+
+      // Load boards for the stack
+      placeholder.style.display = "none";
+      loading.style.display     = "block";
+
+      try {
+        const resp = await fetch(`${FLASK_URL}/boards`, {
+          headers: { "X-Session-ID": sessionId }
+        });
+        if (!resp.ok) throw new Error("Failed to load boards");
+        const data   = await resp.json();
+        const boards = (data.boards ?? []).slice(0, 3); // top 3 for the stack
+
+        loading.style.display = "none";
+
+        if (!boards.length) {
+          placeholder.style.display = "flex";
+          placeholder.querySelector("p").textContent = "No public boards found.";
+          return;
+        }
+
+        // Fetch a handful of pin images per board in parallel
+        const boardPins = await Promise.all(
+          boards.map(b =>
+            fetch(`${FLASK_URL}/pins/${b.id}`, {
+              headers: { "X-Session-ID": sessionId }
+            })
+            .then(r => r.json())
+            .then(d => ({ board: b, pins: (d.pins ?? []).slice(0, 3) }))
+            .catch(() => ({ board: b, pins: [] }))
+          )
+        );
+
+        renderStack(boardPins);
+
+      } catch (err) {
+        console.error("Board stack error:", err);
+        loading.style.display     = "none";
+        placeholder.style.display = "flex";
+      }
+    }
+
+    function renderStack(boardPins) {
+      stack.innerHTML = "";
+
+      // Render back-to-front so index 0 is on top
+      [...boardPins].reverse().forEach(({ board, pins }) => {
+        const card = document.createElement("div");
+        card.className = "board-stack-card";
+
+        // pin mosaic
+        const grid = document.createElement("div");
+        grid.className = "stack-pin-grid";
+
+        pins.forEach((pin, i) => {
+          const img = document.createElement("img");
+          img.src     = pin.image_url;
+          img.alt     = pin.title || "";
+          img.loading = "lazy";
+          if (i === 0) img.classList.add("pin-hero");
+          grid.appendChild(img);
+        });
+
+        // fill missing slots with placeholder divs
+        const filled = pins.length;
+        for (let i = filled; i < 3; i++) {
+          const ph = document.createElement("div");
+          ph.style.cssText = `background:var(--color-surface-soft);${i===0?'grid-row:1/3;':''}`;
+          grid.appendChild(ph);
+        }
+
+        // meta bar
+        const meta = document.createElement("div");
+        meta.className = "stack-card-meta";
+        meta.innerHTML = `
+          <h4>${board.name}</h4>
+          <span>${board.pin_count ?? "—"} pins</span>
+        `;
+
+        card.appendChild(meta);
+        card.appendChild(grid);
+
+        // clicking any card navigates to that board
+        card.addEventListener("click", () => {
+          window.location.href = `board.html?id=${board.id}&name=${encodeURIComponent(board.name)}`;
+        });
+
+        stack.appendChild(card);
+      });
+
+      stack.style.display = "block";
+    }
+
+    init();
+  </script>
 </body>
 </html>

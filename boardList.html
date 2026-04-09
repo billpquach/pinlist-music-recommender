@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PinClip — Your Boards</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* ── Page header ─────────────────────────────────────────────── */
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-md);
+      flex-wrap: wrap;
+    }
+
+    .page-header-left {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .page-header-left h1 {
+      font-size: clamp(1.8rem, 2.5vw, 2.4rem);
+      margin: 0;
+    }
+
+    .page-header-left h1 span { color: var(--color-accent); }
+
+    /* ── Search bar ──────────────────────────────────────────────── */
+    .search-wrap {
+      position: relative;
+      width: 100%;
+      max-width: 340px;
+    }
+
+    .search-wrap svg {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: var(--color-secondary-text);
+    }
+
+    #search-input {
+      width: 100%;
+      padding: 0.7rem 1rem 0.7rem 2.6rem;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      font-family: 'Manrope', sans-serif;
+      font-size: 0.9rem;
+      color: var(--color-ebony);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    #search-input:focus {
+      border-color: var(--color-accent);
+      box-shadow: 0 0 0 3px rgba(248,131,120,0.15);
+    }
+
+    #search-input::placeholder { color: var(--color-secondary-text); }
+
+    /* ── Board grid ──────────────────────────────────────────────── */
+    .boards-section {
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
+      padding: var(--space-xl);
+      border: 1px solid var(--color-border);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .boards-section-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-lg);
+      flex-wrap: wrap;
+      gap: var(--space-sm);
+    }
+
+    .boards-section-heading h2 { margin: 0; font-size: 1.4rem; }
+
+    #board-count {
+      font-size: 0.85rem;
+      color: var(--color-secondary-text);
+    }
+
+    #boards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: var(--space-md);
+    }
+
+    /* empty / loading states */
+    .grid-message {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: var(--space-xxl);
+      color: var(--color-secondary-text);
+      font-size: 0.95rem;
+    }
+
+    /* ── Masonry pins section ────────────────────────────────────── */
+    .pins-section {
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
+      padding: var(--space-xl);
+      border: 1px solid var(--color-border);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .pins-section-heading {
+      margin-bottom: var(--space-lg);
+    }
+
+    .pins-section-heading h2 { margin: 0 0 4px; font-size: 1.4rem; }
+
+    .pins-section-heading p {
+      font-size: 0.85rem;
+      color: var(--color-secondary-text);
+    }
+
+    /* CSS columns masonry */
+    #pins-masonry {
+      columns: 5 160px;
+      column-gap: var(--space-md);
+    }
+
+    .masonry-item {
+      break-inside: avoid;
+      margin-bottom: var(--space-md);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+      background: var(--color-surface-soft);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .masonry-item:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 32px rgba(48,31,25,0.18);
+    }
+
+    .masonry-item img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* board label that appears on pin hover */
+    .masonry-item .pin-board-label {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      padding: 6px 10px;
+      background: linear-gradient(transparent, rgba(45,26,23,0.72));
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 600;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .masonry-item:hover .pin-board-label { opacity: 1; }
+
+    /* pins loading skeleton rows */
+    .pins-skeleton {
+      columns: 5 160px;
+      column-gap: var(--space-md);
+    }
+
+    .pins-skeleton-item {
+      break-inside: avoid;
+      margin-bottom: var(--space-md);
+      border-radius: var(--radius-sm);
+      background: linear-gradient(
+        90deg,
+        var(--color-surface-soft) 25%,
+        var(--color-border) 50%,
+        var(--color-surface-soft) 75%
+      );
+      background-size: 200% 100%;
+      animation: shimmer-slide 1.4s infinite;
+    }
+
+    @keyframes shimmer-slide {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* ── Responsive ──────────────────────────────────────────────── */
+    @media (max-width: 700px) {
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .search-wrap { max-width: 100%; }
+
+      #pins-masonry,
+      .pins-skeleton { columns: 2 120px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-shell">
+    <div class="ambient-grid"></div>
+    <main class="app-shell">
+
+      <!-- ── Page header ─────────────────────────────────────────── -->
+      <div class="page-header">
+        <div class="page-header-left">
+          <a class="back-link" href="index.html">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 12H5M12 5l-7 7 7 7"/>
+            </svg>
+            Home
+          </a>
+          <h1>Pin<span>Clip</span></h1>
+          <p class="eyebrow">your boards</p>
+        </div>
+
+        <div class="search-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input
+            type="search"
+            id="search-input"
+            placeholder="Search boards…"
+            autocomplete="off"
+          />
+        </div>
+      </div>
+
+      <!-- ── Boards grid ─────────────────────────────────────────── -->
+      <section class="boards-section">
+        <div class="boards-section-heading">
+          <h2>Choose a board</h2>
+          <span id="board-count"></span>
+        </div>
+        <div id="boards-grid">
+          <div class="grid-message">
+            <div class="spinner" style="margin:0 auto 12px;"></div>
+            Loading your boards…
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Masonry pins ────────────────────────────────────────── -->
+      <section class="pins-section">
+        <div class="pins-section-heading">
+          <h2>All your pins</h2>
+          <p>A shuffle of everything across your boards — click any pin to open its board.</p>
+        </div>
+        <div id="pins-masonry"></div>
+      </section>
+
+    </main>
+    <footer class="footer">
+      <span>© 2026 PinClip by Bill Quach</span>
+      <a href="privacy.html">Privacy policy</a>
+    </footer>
+  </div>
+
+  <script type="module">
+    import { initAuth } from "./js/auth.js";
+
+    const FLASK_URL = "http://localhost:5000";
+
+    const boardsGrid  = document.getElementById("boards-grid");
+    const boardCount  = document.getElementById("board-count");
+    const searchInput = document.getElementById("search-input");
+    const pinsMasonry = document.getElementById("pins-masonry");
+
+    // ── Auth ────────────────────────────────────────────────────────
+    const sessionId = await initAuth();
+    if (!sessionId) {
+      window.location.href = "index.html";
+    }
+
+    // ── Load boards ─────────────────────────────────────────────────
+    let allBoards = [];
+
+    async function loadBoards() {
+      try {
+        const resp = await fetch(`${FLASK_URL}/boards`, {
+          headers: { "X-Session-ID": sessionId }
+        });
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const data = await resp.json();
+        allBoards  = data.boards ?? [];
+        renderBoards(allBoards);
+        loadAllPins(allBoards);
+      } catch (err) {
+        console.error("Failed to load boards:", err);
+        boardsGrid.innerHTML = `<div class="grid-message">Could not load boards. Please refresh.</div>`;
+      }
+    }
+
+    // ── Render boards ───────────────────────────────────────────────
+    function renderBoards(boards) {
+      boardCount.textContent = `${boards.length} board${boards.length !== 1 ? "s" : ""}`;
+
+      if (!boards.length) {
+        boardsGrid.innerHTML = `<div class="grid-message">No boards found.</div>`;
+        return;
+      }
+
+      boardsGrid.innerHTML = "";
+
+      boards.forEach(board => {
+        const card = document.createElement("div");
+        card.className   = "board-card";
+        card.dataset.name = board.name.toLowerCase();
+
+        const thumb = board.cover_image
+          ? `<div class="board-thumb-wrapper">
+               <img class="board-thumb" src="${board.cover_image}"
+                 alt="${board.name}" loading="lazy" />
+             </div>`
+          : `<div class="board-thumb-wrapper">
+               <div class="board-thumb-placeholder">📌</div>
+             </div>`;
+
+        card.innerHTML = `
+          ${thumb}
+          <div class="board-meta">
+            <h3>${board.name}</h3>
+            <div class="board-meta-footer">
+              <span class="board-count">${board.pin_count ?? 0} pins</span>
+              <span class="board-badge">Open →</span>
+            </div>
+          </div>
+        `;
+
+        card.addEventListener("click", () => {
+          window.location.href =
+            `board.html?id=${board.id}&name=${encodeURIComponent(board.name)}`;
+        });
+
+        boardsGrid.appendChild(card);
+      });
+    }
+
+    // ── Search filter ───────────────────────────────────────────────
+    searchInput.addEventListener("input", () => {
+      const q       = searchInput.value.trim().toLowerCase();
+      const filtered = q
+        ? allBoards.filter(b => b.name.toLowerCase().includes(q))
+        : allBoards;
+      renderBoards(filtered);
+    });
+
+    // ── Load all pins for masonry ────────────────────────────────────
+    async function loadAllPins(boards) {
+      // Show skeleton while loading
+      pinsMasonry.innerHTML = buildSkeleton(20);
+
+      // Fetch pins from all boards in parallel, cap per board to keep it fast
+      const results = await Promise.allSettled(
+        boards.map(b =>
+          fetch(`${FLASK_URL}/pins/${b.id}`, {
+            headers: { "X-Session-ID": sessionId }
+          })
+          .then(r => r.json())
+          .then(d => ({
+            boardId:   b.id,
+            boardName: b.name,
+            pins:      (d.pins ?? []).slice(0, 12)   // max 12 pins per board
+          }))
+        )
+      );
+
+      // Flatten all pins from fulfilled requests
+      let allPins = [];
+      results.forEach(r => {
+        if (r.status === "fulfilled") {
+          const { boardId, boardName, pins } = r.value;
+          pins.forEach(pin => allPins.push({ ...pin, boardId, boardName }));
+        }
+      });
+
+      // Shuffle so pins from different boards are intermixed
+      allPins = shuffle(allPins);
+
+      if (!allPins.length) {
+        pinsMasonry.innerHTML = `<p style="color:var(--muted);font-size:0.9rem;">No pins found.</p>`;
+        return;
+      }
+
+      renderMasonry(allPins);
+    }
+
+    // ── Render masonry ──────────────────────────────────────────────
+    function renderMasonry(pins) {
+      pinsMasonry.innerHTML = "";
+
+      pins.forEach(pin => {
+        const item = document.createElement("div");
+        item.className = "masonry-item";
+        item.title     = pin.title || pin.boardName;
+
+        item.innerHTML = `
+          <img
+            src="${pin.image_url}"
+            alt="${pin.title || ""}"
+            loading="lazy"
+            onerror="this.closest('.masonry-item').style.display='none'"
+          />
+          <div class="pin-board-label">${pin.boardName}</div>
+        `;
+
+        item.addEventListener("click", () => {
+          window.location.href =
+            `board.html?id=${pin.boardId}&name=${encodeURIComponent(pin.boardName)}`;
+        });
+
+        pinsMasonry.appendChild(item);
+      });
+    }
+
+    // ── Helpers ─────────────────────────────────────────────────────
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function buildSkeleton(n) {
+      const heights = [120, 180, 140, 200, 160, 130, 190, 150];
+      return Array.from({ length: n }, (_, i) =>
+        `<div class="pins-skeleton-item" style="height:${heights[i % heights.length]}px;"></div>`
+      ).join("");
+    }
+
+    // ── Init ────────────────────────────────────────────────────────
+    loadBoards();
+  </script>
+</body>
+</html>
