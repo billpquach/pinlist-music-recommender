@@ -47,9 +47,11 @@ const screenshotClose    = document.getElementById("screenshot-close");
 let allPins        = [];
 let currentTracks  = [];
 let currentMood    = "";
-let selectedPinUrls  = [];
-let selectedTrackIds = [];
+let selectedPinUrls   = [];
+let selectedTrackIds  = [];
 let currentPlaylistId = "";
+let pinMoods          = {};   // image_url → [{label, score}, ...]
+let boardMoods        = [];   // [{label, score}, ...] top 3 aggregate
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 const sessionId = await initAuth();
@@ -102,8 +104,44 @@ function renderPins(pins) {
 // ─── Pin selection ────────────────────────────────────────────────────────────
 function enablePinSelection() {
   selectHint.style.display = "inline";
+
   document.querySelectorAll(".pin-item").forEach(item => {
     item.classList.add("selectable");
+    const url   = item.dataset.url;
+    const moods = pinMoods[url] ?? [];
+
+    // ── build mood overlay ──────────────────────────────────────
+    const overlay = document.createElement("div");
+    overlay.className = "pin-mood-overlay";
+
+    moods.forEach(m => {
+      overlay.innerHTML += `
+        <div class="mood-bar-row">
+          <span class="mood-bar-label">${m.label}</span>
+          <div class="mood-bar-track">
+            <div class="mood-bar-fill" style="width:${Math.round(m.score * 100)}%"></div>
+          </div>
+        </div>`;
+    });
+
+    item.appendChild(overlay);
+
+    // ── (i) button — mobile only (CSS hides on desktop) ─────────
+    const infoBtn = document.createElement("button");
+    infoBtn.className   = "pin-info-btn";
+    infoBtn.textContent = "i";
+    infoBtn.addEventListener("click", e => {
+      e.stopPropagation();   // don't trigger pin selection
+      const isOpen = item.classList.contains("mood-visible");
+      // close any other open overlays first
+      document.querySelectorAll(".pin-item.mood-visible")
+        .forEach(el => el.classList.remove("mood-visible"));
+      if (!isOpen) item.classList.add("mood-visible");
+    });
+
+    item.appendChild(infoBtn);
+
+    // ── pin body click = select (existing behaviour) ─────────────
     item.addEventListener("click", () => togglePinSelection(item));
   });
 }
@@ -152,8 +190,15 @@ findBtn.addEventListener("click", async () => {
     const data    = await resp.json();
     currentTracks = data.playlist ?? [];
     currentMood   = data.mood ?? "";
+    boardMoods    = data.board_moods ?? [];
 
-    renderPlaylist(currentTracks, currentMood);
+    // build pinMoods lookup keyed by image_url
+    pinMoods = {};
+    (data.per_pin_moods ?? []).forEach(entry => {
+      pinMoods[entry.url] = entry.moods;
+    });
+
+    renderPlaylist(currentTracks, currentMood, boardMoods);
     enablePinSelection();
 
     selectedTrackIds = currentTracks.slice(0, 4).map((_, i) => i);
@@ -183,7 +228,7 @@ findBtn.addEventListener("click", async () => {
 });
 
 // ─── Render playlist ──────────────────────────────────────────────────────────
-function renderPlaylist(tracks, mood) {
+function renderPlaylist(tracks, mood, bMoods = []) {
   if (!tracks?.length) {
     playlistBody.innerHTML = `
       <div class="playlist-empty">
@@ -194,8 +239,29 @@ function renderPlaylist(tracks, mood) {
   }
 
   if (mood) {
-    moodBadgeWrap.innerHTML = `<span class="mood-badge">✦ ${mood}</span>`;
+    // primary mood badge
+    let badgeHtml = `<span class="mood-badge">✦ ${mood}</span>`;
+    // secondary mood words (2nd and 3rd only — 1st is already the badge)
+    bMoods.slice(1).forEach(m => {
+      badgeHtml += `<span class="mood-badge" style="opacity:0.7;">✦ ${m.label}</span>`;
+    });
+    moodBadgeWrap.innerHTML = badgeHtml;
     scMoodBadge.textContent = mood;
+  }
+
+  // board mood bars below the badges
+  if (bMoods.length) {
+    const barsWrap = document.createElement("div");
+    barsWrap.className = "board-mood-bars";
+    bMoods.forEach(m => {
+      barsWrap.innerHTML += `
+        <div class="board-mood-bar-row">
+          <div class="board-mood-bar-track">
+            <div class="board-mood-bar-fill" style="width:${Math.round(m.score * 100)}%"></div>
+          </div>
+        </div>`;
+    });
+    moodBadgeWrap.appendChild(barsWrap);
   }
 
   playlistMeta.textContent = `${tracks.length} tracks · based on your pins`;

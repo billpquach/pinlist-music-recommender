@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>PinClip – Scroll</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --accent:       #F88378;
+      --accent-2:     #7aa78a;
+      --surface:      #1a1210;
+      --surface-2:    #241714;
+      --border:       rgba(255,255,255,0.08);
+      --text:         #f5ede8;
+      --muted:        rgba(245,237,232,0.5);
+      --spotify:      #1DB954;
+      --radius-pill:  999px;
+      --radius-md:    18px;
+      --radius-sm:    12px;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: var(--surface);
+      font-family: 'Manrope', sans-serif;
+      color: var(--text);
+    }
+
+    /* ── Top bar ───────────────────────────────────────────────────── */
+    .top-bar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      background: linear-gradient(to bottom, rgba(26,18,16,0.95) 0%, transparent 100%);
+      pointer-events: none;
+    }
+
+    .top-bar > * { pointer-events: all; }
+
+    .top-bar-brand {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-decoration: none;
+      letter-spacing: 0.02em;
+    }
+
+    .top-bar-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .top-bar-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border);
+      background: rgba(26,18,16,0.7);
+      backdrop-filter: blur(8px);
+      color: var(--muted);
+      font-family: 'Manrope', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: color 0.18s, border-color 0.18s;
+    }
+
+    .top-bar-btn:hover {
+      color: var(--text);
+      border-color: rgba(255,255,255,0.2);
+    }
+
+    /* ── Scroll container ──────────────────────────────────────────── */
+    .scroll-feed {
+      height: 100vh;
+      overflow-y: scroll;
+      scroll-snap-type: y mandatory;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Hide scrollbar but keep scroll */
+    .scroll-feed::-webkit-scrollbar { display: none; }
+    .scroll-feed { scrollbar-width: none; }
+
+    /* ── Each card ─────────────────────────────────────────────────── */
+    .scroll-card {
+      height: 100vh;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* blurred collage background */
+    .sc-bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      filter: blur(28px) brightness(0.35) saturate(1.4);
+      transform: scale(1.12);
+      transition: background-image 0.4s ease;
+    }
+
+    /* foreground content */
+    .sc-content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    /* collage fills most of the screen */
+    .sc-collage-area {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 70px 16px 12px;
+      min-height: 0;
+    }
+
+    .sc-collage-inner {
+      width: 100%;
+      max-width: 420px;
+      height: 100%;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      box-shadow: 0 32px 64px rgba(0,0,0,0.6);
+    }
+
+    /* collage masonry inside */
+    .sc-mosaic {
+      display: block;
+      columns: 2;
+      column-gap: 4px;
+      padding: 4px;
+      background: #111;
+      height: 100%;
+    }
+
+    .sc-mosaic-pin {
+      break-inside: avoid;
+      margin-bottom: 4px;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .sc-mosaic-pin img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* bottom info panel */
+    .sc-info {
+      padding: 12px 20px 28px;
+      background: linear-gradient(to top, rgba(26,18,16,0.98) 0%, rgba(26,18,16,0.6) 100%);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .sc-header-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .sc-board-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    .sc-mood-badge {
+      font-size: 0.68rem;
+      padding: 4px 11px;
+      border-radius: var(--radius-pill);
+      background: rgba(248,131,120,0.18);
+      border: 1px solid rgba(248,131,120,0.4);
+      color: var(--accent);
+      font-weight: 600;
+      white-space: nowrap;
+      flex-shrink: 0;
+      text-transform: capitalize;
+      margin-top: 4px;
+    }
+
+    /* track pills row */
+    .sc-tracks {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      scrollbar-width: none;
+    }
+
+    .sc-tracks::-webkit-scrollbar { display: none; }
+
+    .sc-track-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius-pill);
+      padding: 5px 10px 5px 5px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .sc-track-pill img {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .sc-track-pill-placeholder {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+    }
+
+    .sc-track-pill-name {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .sc-track-pill-artist {
+      font-size: 0.62rem;
+      color: var(--muted);
+    }
+
+    /* action row: spotify embed toggle + open link */
+    .sc-action-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .sc-spotify-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: var(--spotify);
+      color: #000;
+      border: none;
+      border-radius: var(--radius-pill);
+      font-family: 'Manrope', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .sc-spotify-toggle:hover { opacity: 0.88; }
+    .sc-spotify-toggle:disabled { opacity: 0.4; cursor: default; }
+
+    .sc-open-link {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 8px 14px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.05);
+      color: var(--muted);
+      font-family: 'Manrope', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .sc-open-link:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+
+    /* spotify embed container */
+    .sc-embed-wrap {
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      display: none;
+      height: 80px;
+    }
+
+    .sc-embed-wrap.visible { display: block; }
+
+    .sc-embed-wrap iframe {
+      width: 100%;
+      height: 80px;
+      border: none;
+      border-radius: var(--radius-sm);
+    }
+
+    /* ── Scroll indicator arrows ───────────────────────────────────── */
+    .scroll-hint {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 40;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      opacity: 0.6;
+      animation: hint-bob 2s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    .scroll-hint svg { color: var(--text); }
+
+    .scroll-hint-text {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--text);
+    }
+
+    @keyframes hint-bob {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50%       { transform: translateX(-50%) translateY(6px); }
+    }
+
+    .scroll-hint.hidden { display: none; }
+
+    /* ── Counter pill ──────────────────────────────────────────────── */
+    .counter-pill {
+      position: fixed;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 50;
+      background: rgba(26,18,16,0.75);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-pill);
+      padding: 4px 14px;
+      font-size: 0.72rem;
+      color: var(--muted);
+      font-weight: 600;
+      pointer-events: none;
+    }
+
+    /* ── Loading / empty states ────────────────────────────────────── */
+    .scroll-loading {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      color: var(--muted);
+    }
+
+    .scroll-spinner {
+      width: 32px;
+      height: 32px;
+      border: 2px solid rgba(255,255,255,0.1);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .scroll-empty {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      text-align: center;
+      padding: 40px;
+    }
+
+    .scroll-empty-icon { font-size: 3rem; opacity: 0.4; }
+
+    .scroll-empty h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      color: var(--text);
+    }
+
+    .scroll-empty p { font-size: 0.9rem; color: var(--muted); max-width: 300px; }
+
+    /* ── Now playing indicator ─────────────────────────────────────── */
+    .now-playing-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.68rem;
+      color: var(--spotify);
+      font-weight: 600;
+    }
+
+    .np-dots {
+      display: flex;
+      gap: 2px;
+      align-items: flex-end;
+    }
+
+    .np-dot {
+      width: 3px;
+      border-radius: 2px;
+      background: var(--spotify);
+      animation: np-bounce 0.9s ease-in-out infinite;
+    }
+
+    .np-dot:nth-child(1) { height: 6px; animation-delay: 0s; }
+    .np-dot:nth-child(2) { height: 10px; animation-delay: 0.15s; }
+    .np-dot:nth-child(3) { height: 7px; animation-delay: 0.3s; }
+    .np-dot:nth-child(4) { height: 12px; animation-delay: 0.45s; }
+
+    @keyframes np-bounce {
+      0%, 100% { transform: scaleY(0.6); }
+      50%       { transform: scaleY(1); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top bar -->
+  <div class="top-bar">
+    <a class="top-bar-brand" href="index.html">PinClip</a>
+    <div class="top-bar-actions">
+      <a class="top-bar-btn" href="explore.html">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+          <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+        </svg>
+        Grid view
+      </a>
+      <a class="top-bar-btn" href="index.html">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        Home
+      </a>
+    </div>
+  </div>
+
+  <!-- Counter pill -->
+  <div class="counter-pill" id="counter-pill">— / —</div>
+
+  <!-- Scroll feed -->
+  <div class="scroll-feed" id="scroll-feed">
+    <!-- Loading state -->
+    <div class="scroll-loading" id="scroll-loading">
+      <div class="scroll-spinner"></div>
+      <p style="font-size:0.85rem;">Loading boards…</p>
+    </div>
+  </div>
+
+  <!-- Scroll hint (hidden after first scroll) -->
+  <div class="scroll-hint" id="scroll-hint">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 5v14M5 12l7 7 7-7"/>
+    </svg>
+    <span class="scroll-hint-text">Scroll</span>
+  </div>
+
+  <script>
+    const FLASK_URL = "http://localhost:5000";
+
+    let cards        = [];
+    let currentIdx   = 0;
+    let activeEmbed  = null;   // track which card currently has embed injected
+    let userGestured = false;  // browser autoplay gate
+
+    const feed        = document.getElementById("scroll-feed");
+    const loading     = document.getElementById("scroll-loading");
+    const counterPill = document.getElementById("counter-pill");
+    const scrollHint  = document.getElementById("scroll-hint");
+
+    // ── Fetch all cards ────────────────────────────────────────────
+    async function fetchAll() {
+      try {
+        // fetch up to 100 cards (paginate if you have more)
+        const resp = await fetch(`${FLASK_URL}/explore/feed?limit=100&offset=0`);
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const data = await resp.json();
+        return data.cards ?? [];
+      } catch (err) {
+        console.error("Feed error:", err);
+        return [];
+      }
+    }
+
+    // ── Build one full-screen card ────────────────────────────────
+    function buildScrollCard(card, idx) {
+      const el = document.createElement("div");
+      el.className    = "scroll-card";
+      el.dataset.idx  = idx;
+      el.dataset.pid  = card.playlist_id ?? "";
+
+      // blurred bg — use first pin image
+      const bgUrl = card.pin_images?.[0] ?? "";
+      const bg = document.createElement("div");
+      bg.className = "sc-bg";
+      if (bgUrl) bg.style.backgroundImage = `url('${bgUrl}')`;
+      el.appendChild(bg);
+
+      // foreground
+      const content = document.createElement("div");
+      content.className = "sc-content";
+
+      // collage area
+      const collageArea = document.createElement("div");
+      collageArea.className = "sc-collage-area";
+
+      const collageInner = document.createElement("div");
+      collageInner.className = "sc-collage-inner";
+
+      const mosaic = document.createElement("div");
+      mosaic.className = "sc-mosaic";
+
+      const heights = [180, 240, 200, 220, 160, 210];
+      (card.pin_images ?? []).slice(0, 6).forEach((url, i) => {
+        const pin = document.createElement("div");
+        pin.className = "sc-mosaic-pin";
+        pin.style.height = heights[i % heights.length] + "px";
+        const img = document.createElement("img");
+        img.src     = url;
+        img.alt     = "";
+        img.loading = i === 0 ? "eager" : "lazy";
+        pin.appendChild(img);
+        mosaic.appendChild(pin);
+      });
+
+      collageInner.appendChild(mosaic);
+      collageArea.appendChild(collageInner);
+      content.appendChild(collageArea);
+
+      // info panel
+      const info = document.createElement("div");
+      info.className = "sc-info";
+
+      // header row
+      const headerRow = document.createElement("div");
+      headerRow.className = "sc-header-row";
+
+      const boardName = document.createElement("div");
+      boardName.className   = "sc-board-name";
+      boardName.textContent = card.board_name ?? "Board";
+
+      const moodBadge = document.createElement("span");
+      moodBadge.className   = "sc-mood-badge";
+      moodBadge.textContent = card.mood ?? "";
+      moodBadge.style.display = card.mood ? "inline-block" : "none";
+
+      headerRow.appendChild(boardName);
+      headerRow.appendChild(moodBadge);
+      info.appendChild(headerRow);
+
+      // track pills
+      if (card.tracks?.length) {
+        const tracksRow = document.createElement("div");
+        tracksRow.className = "sc-tracks";
+
+        card.tracks.slice(0, 4).forEach(track => {
+          const pill = document.createElement("div");
+          pill.className = "sc-track-pill";
+
+          const thumb = track.thumbnail
+            ? `<img src="${esc(track.thumbnail)}" alt="" />`
+            : `<div class="sc-track-pill-placeholder">♪</div>`;
+
+          pill.innerHTML = `
+            ${thumb}
+            <div>
+              <div class="sc-track-pill-name">${esc(track.name)}</div>
+              <div class="sc-track-pill-artist">${esc(track.artist)}</div>
+            </div>
+          `;
+          tracksRow.appendChild(pill);
+        });
+
+        info.appendChild(tracksRow);
+      }
+
+      // action row
+      const actionRow = document.createElement("div");
+      actionRow.className = "sc-action-row";
+
+      if (card.playlist_id) {
+        // now-playing indicator (shown when embed is active)
+        const nowPlaying = document.createElement("div");
+        nowPlaying.className   = "now-playing-bar";
+        nowPlaying.id          = `np-${idx}`;
+        nowPlaying.style.display = "none";
+        nowPlaying.innerHTML   = `
+          <div class="np-dots">
+            <div class="np-dot"></div>
+            <div class="np-dot"></div>
+            <div class="np-dot"></div>
+            <div class="np-dot"></div>
+          </div>
+          Now playing
+        `;
+
+        const toggleBtn = document.createElement("button");
+        toggleBtn.className   = "sc-spotify-toggle";
+        toggleBtn.id          = `toggle-${idx}`;
+        toggleBtn.innerHTML   = `
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+          </svg>
+          Play on Spotify
+        `;
+        toggleBtn.addEventListener("click", () => {
+          userGestured = true;
+          injectEmbed(el, idx, card.playlist_id, true);
+        });
+
+        const openLink = document.createElement("a");
+        openLink.className  = "sc-open-link";
+        openLink.href       = `https://open.spotify.com/playlist/${card.playlist_id}`;
+        openLink.target     = "_blank";
+        openLink.rel        = "noopener noreferrer";
+        openLink.innerHTML  = `
+          Open ↗
+        `;
+
+        actionRow.appendChild(nowPlaying);
+        actionRow.appendChild(toggleBtn);
+        actionRow.appendChild(openLink);
+      }
+
+      info.appendChild(actionRow);
+
+      // embed container (hidden until triggered)
+      const embedWrap = document.createElement("div");
+      embedWrap.className = "sc-embed-wrap";
+      embedWrap.id        = `embed-${idx}`;
+      info.appendChild(embedWrap);
+
+      content.appendChild(info);
+      el.appendChild(content);
+
+      return el;
+    }
+
+    // ── Inject / remove Spotify embed ─────────────────────────────
+    function injectEmbed(cardEl, idx, playlistId, forceShow = false) {
+      // remove embed from previous card
+      if (activeEmbed !== null && activeEmbed !== idx) {
+        clearEmbed(activeEmbed);
+      }
+
+      const embedWrap = document.getElementById(`embed-${idx}`);
+      const nowPlaying = document.getElementById(`np-${idx}`);
+      const toggleBtn  = document.getElementById(`toggle-${idx}`);
+
+      if (!embedWrap || !playlistId) return;
+
+      // already injected
+      if (embedWrap.classList.contains("visible") && !forceShow) return;
+
+      embedWrap.innerHTML = `
+        <iframe
+          src="https://open.spotify.com/embed/playlist/${playlistId}?autoplay=1&theme=0"
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+          loading="lazy">
+        </iframe>
+      `;
+      embedWrap.classList.add("visible");
+      if (nowPlaying) nowPlaying.style.display = "flex";
+      if (toggleBtn)  toggleBtn.style.display  = "none";
+
+      activeEmbed = idx;
+    }
+
+    function clearEmbed(idx) {
+      const embedWrap  = document.getElementById(`embed-${idx}`);
+      const nowPlaying = document.getElementById(`np-${idx}`);
+      const toggleBtn  = document.getElementById(`toggle-${idx}`);
+
+      if (embedWrap) {
+        embedWrap.innerHTML = "";
+        embedWrap.classList.remove("visible");
+      }
+      if (nowPlaying) nowPlaying.style.display = "none";
+      if (toggleBtn)  toggleBtn.style.display  = "flex";
+    }
+
+    // ── Intersection Observer — autoplay on scroll ─────────────────
+    function setupObserver() {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          const idx = parseInt(entry.target.dataset.idx);
+          const pid = entry.target.dataset.pid;
+
+          if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
+            // update counter
+            currentIdx = idx;
+            counterPill.textContent = `${idx + 1} / ${cards.length}`;
+
+            // autoplay if user has already gestured once
+            if (userGestured && pid) {
+              injectEmbed(entry.target, idx, pid);
+            }
+          } else if (!entry.isIntersecting && idx === activeEmbed) {
+            // card left viewport — clear embed
+            clearEmbed(idx);
+          }
+        });
+      }, {
+        threshold: [0.6],
+        root: feed
+      });
+
+      feed.querySelectorAll(".scroll-card").forEach(card => observer.observe(card));
+    }
+
+    // ── Keyboard nav ───────────────────────────────────────────────
+    document.addEventListener("keydown", e => {
+      if (e.key === "ArrowDown" || e.key === "ArrowRight") {
+        e.preventDefault();
+        const next = feed.querySelector(`.scroll-card[data-idx="${currentIdx + 1}"]`);
+        if (next) next.scrollIntoView({ behavior: "smooth" });
+      }
+      if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
+        e.preventDefault();
+        const prev = feed.querySelector(`.scroll-card[data-idx="${currentIdx - 1}"]`);
+        if (prev) prev.scrollIntoView({ behavior: "smooth" });
+      }
+    });
+
+    // Hide scroll hint after first scroll
+    feed.addEventListener("scroll", () => {
+      scrollHint.classList.add("hidden");
+      userGestured = true;
+    }, { once: true });
+
+    // ── Render all cards ──────────────────────────────────────────
+    function renderCards(data) {
+      feed.innerHTML = "";
+
+      if (!data.length) {
+        feed.innerHTML = `
+          <div class="scroll-empty">
+            <div class="scroll-empty-icon">🎵</div>
+            <h2>Nothing here yet</h2>
+            <p>Share a playlist card from a board to see it here.</p>
+            <a href="index.html" style="
+              margin-top:16px; display:inline-flex; align-items:center; gap:6px;
+              padding:10px 20px; border-radius:999px;
+              background:rgba(248,131,120,0.15); border:1px solid rgba(248,131,120,0.4);
+              color:#F88378; font-size:0.82rem; font-weight:700; text-decoration:none;">
+              Go to my boards →
+            </a>
+          </div>`;
+        return;
+      }
+
+      data.forEach((card, i) => {
+        feed.appendChild(buildScrollCard(card, i));
+      });
+
+      // init counter
+      counterPill.textContent = `1 / ${data.length}`;
+
+      setupObserver();
+    }
+
+    // ── Escape helper ─────────────────────────────────────────────
+    function esc(str) {
+      return String(str ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    // ── Boot ──────────────────────────────────────────────────────
+    (async () => {
+      cards = await fetchAll();
+      loading.remove();
+      renderCards(cards);
+    })();
+  </script>
+</body>
+</html>

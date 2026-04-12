@@ -238,12 +238,52 @@ def filter_to_final_playlist(
 
 # ─── Main Pipeline ────────────────────────────────────────────────────────────
 
-def run_pipeline(image_urls: list[str]) -> list[tuple]:
+def run_pipeline(image_urls: list[str]):
     print(f"\n── Classifying {len(image_urls)} image(s)...")
-    probs = aggregate_board_probs(image_urls)
+
+    # ── Per-pin classification ────────────────────────────────────────
+    all_probs   = []
+    per_pin_moods = []
+
+    for i, url in enumerate(image_urls):
+        try:
+            image = load_image(url)
+            probs = classify_image(image)
+            all_probs.append(probs)
+
+            # top 3 moods for this pin, normalized to sum to 1
+            indexed = sorted(enumerate(probs), key=lambda x: x[1], reverse=True)[:3]
+            top3_sum = sum(s for _, s in indexed)
+            per_pin_moods.append({
+                "url": url,
+                "moods": [
+                    {"label": MOOD_LABELS[idx], "score": round(s / top3_sum, 4)}
+                    for idx, s in indexed
+                ]
+            })
+            print(f"  [{i+1}/{len(image_urls)}] classified")
+        except Exception as e:
+            print(f"  [{i+1}/{len(image_urls)}] skipped — {e}")
+            per_pin_moods.append({"url": url, "moods": []})
+
+    if not all_probs:
+        raise ValueError("No images could be classified.")
+
+    # ── Board-level aggregate ─────────────────────────────────────────
+    n     = len(all_probs)
+    probs = [sum(p[i] for p in all_probs) / n for i in range(len(MOOD_LABELS))]
+
+    # top 3 board moods normalized
+    indexed   = sorted(enumerate(probs), key=lambda x: x[1], reverse=True)[:3]
+    top3_sum  = sum(s for _, s in indexed)
+    board_moods = [
+        {"label": MOOD_LABELS[idx], "score": round(s / top3_sum, 4)}
+        for idx, s in indexed
+    ]
 
     top_mood = MOOD_LABELS[probs.index(max(probs))]
     print(f"\n── Board mood fingerprint — top: {top_mood}")
+    print(f"── Board top 3: {[m['label'] for m in board_moods]}")
 
     print("\n── Fetching recommendations...")
     recs, mood = board_to_recommendations(probs)
@@ -255,15 +295,7 @@ def run_pipeline(image_urls: list[str]) -> list[tuple]:
     print(f"── Received {len(recs['content'])} candidates, filtering with CLIP...")
     playlist = filter_to_final_playlist(recs, mood)
 
-    return playlist, mood
-
-
-def print_playlist(playlist: list[tuple]) -> None:
-    print(f"\n🎵 Final Playlist ({len(playlist)} tracks)\n{'─'*48}")
-    for i, (score, name, artist, url, thumbnail, track_id) in enumerate(playlist, 1):
-        print(f"  {i:>2}. {name} — {artist}")
-        print(f"      {url}")
-        print(f"      similarity: {score:.3f}\n")
+    return playlist, mood, per_pin_moods, board_moods
 
 
 # ─── Entry Point ─────────────────────────────────────────────────────────────

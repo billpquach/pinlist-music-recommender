@@ -171,7 +171,7 @@ def analyze():
         return jsonify({"error": "No images provided"}), 400
 
     try:
-        playlist, mood = run_pipeline(image_urls)
+        playlist, mood, per_pin_moods, board_moods = run_pipeline(image_urls)
         print(f"Playlist length: {len(playlist)}, mood: {mood}")
         playlist_payload = []
         for entry in playlist:
@@ -185,7 +185,12 @@ def analyze():
                 "track_id":  track_id,
                 "score":     round(score, 3)
             })
-        return jsonify({"mood": mood, "playlist": playlist_payload})
+        return jsonify({
+            "mood":          mood,
+            "playlist":      playlist_payload,
+            "per_pin_moods": per_pin_moods,
+            "board_moods":   board_moods,
+        })
     except Exception as e:
         print(f"Pipeline error: {e}")
         return jsonify({"error": str(e)}), 500
