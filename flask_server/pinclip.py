@@ -25,6 +25,7 @@ print("CLIP ready.\n")
 # ─── Mood Labels ─────────────────────────────────────────────────────────────
 
 MOOD_LABELS = [
+    # ── existing ──────────────────────────────────────────────────
     "dark and moody",
     "bright and energetic",
     "calm and peaceful",
@@ -37,7 +38,35 @@ MOOD_LABELS = [
     "gothic",
     "coastal beach",
     "preppy",
+    # ── performative subcategories (map to parent "performative") ──
+    "performative matcha",
+    "performative totebag",
+    "performative book",
+    "performative vinyl",
+    "wired earbuds",
+    # ── old money subcategories ────────────────────────────────────
+    "old money mediterranean outfit",  # → "old money"
+    "old money academia outfit",       # → "dark academia"
+    # ── standalone new moods ──────────────────────────────────────
+    "hypebeast",
+    "beach day outfit",
+    "gym bro",
+    "goth",
 ]
+
+# ─── Subcategory → Parent Mood Map ───────────────────────────────────────────
+# CLIP classifies against subcategory labels for better visual recognition.
+# Any label found here is resolved to its parent before fetching recommendations.
+
+SUBCATEGORY_MAP = {
+    "performative matcha":            "performative",
+    "performative totebag":           "performative",
+    "performative book":              "performative",
+    "performative vinyl":             "performative",
+    "wired earbuds":                  "performative",
+    "old money mediterranean outfit": "old money",
+    "old money academia outfit":      "dark academia",
+}
 
 # ─── Mood Prompts ─────────────────────────────────────────────────────────────
 
@@ -54,6 +83,14 @@ MOOD_PROMPTS = {
     "gothic":               "A dark, theatrical song with gothic imagery, heavy atmosphere, and minor tonality",
     "coastal beach":        "A breezy, sun-soaked track with a relaxed, summery, coastal feel",
     "preppy":               "A clean, polished pop song with bright production and an upscale, carefree vibe",
+    # ── new parent moods ───────────────────────────────────────────
+    "performative":   "An intimate indie-pop or bedroom-pop song in the style of Laufey, Clairo, or Mitski — delicate vocals, lo-fi production, soft guitar, and an introspective emotional atmosphere",
+    "old money":      "A romantic mid-20th century jazz song or R&B song or opera song or classical song or instrumental song or classic French chanson or Italian canzone — think Dean Martin, Frank Sinatra, Édith Piaf, or Pino Daniele",
+    "dark academia":  "A brooding, literary song blending jazz piano and cinematic folk, with rich melancholic atmosphere and poetic lyricism",
+    "hypebeast":      "A hard-hitting trap banger with heavy 808 bass, aggressive ad-libs, and high-energy production",
+    "beach day outfit": "A warm breezy surf-rock or indie track with bright guitar and an effortlessly relaxed summery feel",
+    "gym bro":        "A high-energy rap or trap track with driving bass and motivational energy for a workout",
+    "goth":           "A dark post-punk or goth rock track with brooding guitars, dramatic vocals, and a theatrical atmosphere",
 }
 
 # ─── Mood Seeds ──────────────────────────────────────────────────────────────
@@ -71,6 +108,14 @@ MOOD_SEEDS = {
     "gothic":               ["1EryAkZ0VHstC6haIxVBiE"],
     "coastal beach":        ["3xKsf9qdS1CyvXSMEid6g8"],
     "preppy":               ["43iIQbw5hx986dUEZbr3eN"],
+    # ── new moods — ⚠️ PLACEHOLDER seeds, swap with real ReccoBeats IDs ──
+    "performative":         ["08PdFBcXzpkn1cWNgmKqhn", "3vkCueOmm7xQDoJ17W1Pm3"],  # ⚠️ borrowed: romantic and dreamy
+    "old money":            ["78OdnOhPOk19xYhGAKgjCO", "3lAun9V0YdTlCSIEXPvfsY", "0cgcD73SD4nFdTK2oKofzW"],  # ⚠️ borrowed: preppy
+    "dark academia":        ["2Co0IjcLTSHMtodwD4gzfg"],  # ⚠️ borrowed: melancholic and sad
+    "hypebeast":            ["1e1JKLEDKP7hEQzJfNAgPl"],  # ⚠️ borrowed: edgy and intense
+    "beach day outfit":     ["3xKsf9qdS1CyvXSMEid6g8"],  # ⚠️ borrowed: coastal beach
+    "gym bro":              ["3QFInJAm9eyaho5vBzxInN"],  # ⚠️ borrowed: bright and energetic
+    "goth":                 ["5dTHtzHFPyi8TlTtzoz1J9", ""],  # ⚠️ borrowed: gothic
 }
 
 # ─── Pre-cache mood embeddings ────────────────────────────────────────────────
@@ -140,11 +185,16 @@ RECCOBEATS_BASE = "https://api.reccobeats.com/v1"
 
 def board_to_recommendations(probs: list[float], size: int = 50) -> tuple[dict, str]:
     sorted_moods = sorted(zip(probs, MOOD_LABELS), reverse=True)
-    top_mood     = sorted_moods[0][1]
-    seeds        = MOOD_SEEDS.get(top_mood, [])[:5]
+    raw_mood     = sorted_moods[0][1]
 
-    print(f"Top mood:    {top_mood}")
-    print(f"Seeds:       {seeds}")
+    # resolve subcategory to parent if applicable
+    top_mood = SUBCATEGORY_MAP.get(raw_mood, raw_mood)
+
+    seeds = MOOD_SEEDS.get(top_mood, [])[:5]
+
+    print(f"Raw CLIP mood:  {raw_mood}")
+    print(f"Resolved mood:  {top_mood}")
+    print(f"Seeds:          {seeds}")
 
     params = [("seeds", s) for s in seeds]
     params.append(("size", size))
@@ -257,7 +307,10 @@ def run_pipeline(image_urls: list[str]):
             per_pin_moods.append({
                 "url": url,
                 "moods": [
-                    {"label": MOOD_LABELS[idx], "score": round(s / top3_sum, 4)}
+                    {
+                        "label": SUBCATEGORY_MAP.get(MOOD_LABELS[idx], MOOD_LABELS[idx]),
+                        "score": round(s / top3_sum, 4)
+                    }
                     for idx, s in indexed
                 ]
             })
@@ -273,12 +326,20 @@ def run_pipeline(image_urls: list[str]):
     n     = len(all_probs)
     probs = [sum(p[i] for p in all_probs) / n for i in range(len(MOOD_LABELS))]
 
-    # top 3 board moods normalized
-    indexed   = sorted(enumerate(probs), key=lambda x: x[1], reverse=True)[:3]
-    top3_sum  = sum(s for _, s in indexed)
+    # top 3 board moods — resolve subcategories and deduplicate parents
+    indexed = sorted(enumerate(probs), key=lambda x: x[1], reverse=True)
+    seen_parents = {}
+    for idx, s in indexed:
+        parent = SUBCATEGORY_MAP.get(MOOD_LABELS[idx], MOOD_LABELS[idx])
+        if parent not in seen_parents:
+            seen_parents[parent] = s
+        if len(seen_parents) == 3:
+            break
+
+    top3_sum = sum(seen_parents.values())
     board_moods = [
-        {"label": MOOD_LABELS[idx], "score": round(s / top3_sum, 4)}
-        for idx, s in indexed
+        {"label": parent, "score": round(s / top3_sum, 4)}
+        for parent, s in seen_parents.items()
     ]
 
     top_mood = MOOD_LABELS[probs.index(max(probs))]
@@ -302,7 +363,7 @@ def run_pipeline(image_urls: list[str]):
 
 if __name__ == "__main__":
     TEST_IMAGES = [
-        "https://www.theknot.com/tk-media/images/f2b93b5b-623e-42d4-a76e-8f38d4ed463a",
+        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNSKRJGKtVXqi19M9-Ks-CtckHJszXj1swRg&s",
     ]
     playlist = run_pipeline(TEST_IMAGES)
-    print_playlist(playlist)
+    print(playlist)
