@@ -152,7 +152,7 @@ function togglePinSelection(item) {
     item.classList.remove("selected");
     selectedPinUrls = selectedPinUrls.filter(u => u !== url);
   } else {
-    if (selectedPinUrls.length >= 12) return;
+    if (selectedPinUrls.length >= 5) return;
     item.classList.add("selected");
     selectedPinUrls.push(url);
   }
@@ -397,7 +397,7 @@ function toggleModalPin(item, url) {
     document.querySelectorAll(".pin-item")
       .forEach(el => { if (el.dataset.url === url) el.classList.remove("selected"); });
   } else {
-    if (selectedPinUrls.length >= 12) return;
+    if (selectedPinUrls.length >= 5) return;
     item.classList.add("selected");
     selectedPinUrls.push(url);
     document.querySelectorAll(".pin-item")
@@ -423,10 +423,11 @@ function syncModalPinGrid() {
 }
 
 function updatePinCount() {
-  pinSelCount.textContent     = `${selectedPinUrls.length} / 12`;
-  const ready                 = selectedPinUrls.length >= 2 && selectedTrackIds.length >= 1;
-  modalDownload.disabled      = !ready;
-  modalShareExplore.disabled  = !ready;
+  const n = selectedPinUrls.length;
+  pinSelCount.textContent    = `${n} / 5`;
+  const ready                = n >= 3 && n <= 5 && selectedTrackIds.length >= 1;
+  modalDownload.disabled     = !ready;
+  modalShareExplore.disabled = !ready;
 }
 
 // ─── Track swap ───────────────────────────────────────────────────────────────
@@ -478,6 +479,32 @@ function toggleTrackSwap(idx) {
 function updateShareCard() {
   renderCollage();
   renderCardTracks();
+  renderCardMoods();
+}
+// ─── Share card mood bars ─────────────────────────────────────────────────────
+function renderCardMoods() {
+  const wrap = document.getElementById("sc-mood-bars");
+  if (!wrap) return;
+  wrap.innerHTML = "";
+  if (!boardMoods.length) return;
+
+  const label = document.createElement("div");
+  label.style.cssText = "font-size:0.65rem;text-transform:uppercase;letter-spacing:0.22em;color:var(--color-secondary-text);margin-bottom:6px;";
+  label.textContent = "Board Mood";
+  wrap.appendChild(label);
+
+  boardMoods.forEach(m => {
+    wrap.innerHTML += `
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+        <span style="font-size:0.62rem;font-weight:600;color:var(--color-secondary-text);
+          text-transform:capitalize;min-width:110px;white-space:nowrap;
+          overflow:hidden;text-overflow:ellipsis;">${m.label}</span>
+        <div style="flex:1;height:4px;background:var(--color-border);border-radius:999px;overflow:hidden;">
+          <div style="height:100%;border-radius:999px;background:var(--color-accent);
+            width:${Math.round(m.score * 100)}%;"></div>
+        </div>
+      </div>`;
+  });
 }
 
 function renderCollage() {
@@ -569,11 +596,12 @@ modalShareExplore.addEventListener("click", async () => {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-Session-ID": sessionId },
       body: JSON.stringify({
-        board_name: boardName,
-        mood:       currentMood,
-        pin_images: selectedPinUrls,
-        tracks:     selectedTrackIds.map(i => currentTracks[i]).filter(Boolean),
+        board_name:  boardName,
+        mood:        currentMood,
+        pin_images:  selectedPinUrls,
+        tracks:      selectedTrackIds.map(i => currentTracks[i]).filter(Boolean),
         playlist_id: currentPlaylistId || undefined,
+        board_moods: boardMoods,
       })
     });
 

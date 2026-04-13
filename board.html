@@ -810,7 +810,7 @@
       <div class="modal-header">
         <div>
           <h2>Create your share card</h2>
-          <p>Select 2–12 pins from the board, then pick your top 4 tracks.</p>
+          <p>Select 3–5 pins from the board, then pick your top 4 tracks.</p>
         </div>
         <button class="modal-close" id="modal-close">✕</button>
       </div>
@@ -819,7 +819,7 @@
 
         <!-- left: pin picker + track swap -->
         <div class="modal-pin-selector">
-          <h4>Select pins <span id="pin-sel-count" style="color:var(--color-accent);">0 / 12</span></h4>
+          <h4>Select pins <span id="pin-sel-count" style="color:var(--color-accent);">0 / 5</span></h4>
           <div class="modal-pins-grid" id="modal-pins-grid"></div>
 
           <div class="track-swap-list" id="track-swap-list">
@@ -843,6 +843,11 @@
 
             <div class="sc-collage" id="sc-collage">
               <!-- polaroid pins injected by JS -->
+            </div>
+
+            <!-- mood bars on share card -->
+            <div class="sc-mood-bars" id="sc-mood-bars" style="padding:8px 14px 4px;">
+              <!-- injected by JS -->
             </div>
 
             <div class="sc-top-songs">

@@ -354,6 +354,7 @@ def explore_save():
             pin_images=pin_images[:12],
             tracks=tracks[:4],
             playlist_id=playlist_id,
+            board_moods=body.get("board_moods", []),
         )
         return jsonify({"ok": True, "id": row_id})
     except Exception as e:

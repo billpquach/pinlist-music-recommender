@@ -12,8 +12,7 @@
   />
   <link rel="stylesheet" href="css/style.css" />
   <style>
-    /* ── Explore page ─────────────────────────────────────────────── */
-
+    /* ── Explore hero ────────────────────────────────────────────── */
     .explore-hero {
       display: flex;
       align-items: flex-end;
@@ -21,99 +20,39 @@
       gap: var(--space-lg);
       flex-wrap: wrap;
     }
-
-    .explore-hero-text .eyebrow {
-      margin-bottom: var(--space-sm);
-    }
-
-    .explore-hero-text h1 {
-      font-size: clamp(2.4rem, 3vw, 3.2rem);
-      margin: 0 0 var(--space-sm);
-    }
-
-    .explore-hero-text h1 span {
-      color: var(--color-accent);
-    }
-
-    .explore-hero-text p {
-      font-size: 1rem;
-      max-width: 480px;
-    }
-
-    .explore-hero-stats {
-      display: flex;
-      gap: var(--space-lg);
-      flex-shrink: 0;
-    }
-
-    .explore-stat {
-      text-align: right;
-    }
-
+    .explore-hero-text .eyebrow { margin-bottom: var(--space-sm); }
+    .explore-hero-text h1 { font-size: clamp(2.4rem, 3vw, 3.2rem); margin: 0 0 var(--space-sm); }
+    .explore-hero-text h1 span { color: var(--color-accent); }
+    .explore-hero-text p { font-size: 1rem; max-width: 480px; }
+    .explore-hero-stats { display: flex; gap: var(--space-lg); flex-shrink: 0; }
+    .explore-stat { text-align: right; }
     .explore-stat-num {
       font-family: 'Playfair Display', serif;
-      font-size: 2rem;
-      font-weight: 700;
-      color: var(--color-ebony);
-      line-height: 1;
+      font-size: 2rem; font-weight: 700;
+      color: var(--color-ebony); line-height: 1;
     }
-
     .explore-stat-label {
-      font-size: 0.72rem;
-      text-transform: uppercase;
-      letter-spacing: 0.2em;
-      color: var(--color-secondary-text);
-      margin-top: 2px;
+      font-size: 0.72rem; text-transform: uppercase;
+      letter-spacing: 0.2em; color: var(--color-secondary-text); margin-top: 2px;
     }
 
     /* ── Filter bar ──────────────────────────────────────────────── */
-
-    .filter-bar {
-      display: flex;
-      gap: var(--space-sm);
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
+    .filter-bar { display: flex; gap: var(--space-sm); flex-wrap: wrap; align-items: center; }
     .filter-label {
-      font-size: 0.78rem;
-      text-transform: uppercase;
-      letter-spacing: 0.2em;
-      color: var(--color-secondary-text);
-      margin-right: var(--space-sm);
+      font-size: 0.78rem; text-transform: uppercase;
+      letter-spacing: 0.2em; color: var(--color-secondary-text); margin-right: var(--space-sm);
     }
-
     .filter-chip {
-      padding: 6px 14px;
-      border-radius: var(--radius-pill);
-      border: 1px solid var(--color-border);
-      background: var(--color-surface);
-      font-family: 'Manrope', sans-serif;
-      font-size: 0.78rem;
-      font-weight: 600;
-      color: var(--color-secondary-text);
-      cursor: pointer;
-      transition: all 0.18s ease;
+      padding: 6px 14px; border-radius: var(--radius-pill);
+      border: 1px solid var(--color-border); background: var(--color-surface);
+      font-family: 'Manrope', sans-serif; font-size: 0.78rem; font-weight: 600;
+      color: var(--color-secondary-text); cursor: pointer; transition: all 0.18s ease;
     }
-
-    .filter-chip:hover {
-      border-color: var(--color-accent);
-      color: var(--color-accent);
-      background: rgba(248, 131, 120, 0.06);
-    }
-
-    .filter-chip.active {
-      background: var(--color-accent);
-      border-color: var(--color-accent);
-      color: #fff;
-    }
+    .filter-chip:hover { border-color: var(--color-accent); color: var(--color-accent); background: rgba(248,131,120,0.06); }
+    .filter-chip.active { background: var(--color-accent); border-color: var(--color-accent); color: #fff; }
 
     /* ── Feed grid ───────────────────────────────────────────────── */
-
-    .feed-grid {
-      columns: 3 280px;
-      column-gap: var(--space-md);
-    }
+    .feed-grid { columns: 3 280px; column-gap: var(--space-md); }
 
     .feed-card {
       break-inside: avoid;
@@ -124,379 +63,336 @@
       box-shadow: var(--shadow-soft);
       overflow: hidden;
       cursor: pointer;
-      transition: transform 0.25s cubic-bezier(0.4,0,0.2,1),
-                  box-shadow 0.25s cubic-bezier(0.4,0,0.2,1);
       opacity: 0;
       transform: translateY(18px);
       animation: card-in 0.45s cubic-bezier(0.4,0,0.2,1) forwards;
+      transition: transform 0.25s cubic-bezier(0.4,0,0.2,1), box-shadow 0.25s cubic-bezier(0.4,0,0.2,1);
     }
+    @keyframes card-in { to { opacity: 1; transform: translateY(0); } }
+    .feed-card:hover { transform: translateY(-5px); box-shadow: 0 28px 50px rgba(48,31,25,0.18); }
 
-    @keyframes card-in {
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .feed-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 28px 50px rgba(48, 31, 25, 0.18);
-    }
-
-    /* collage area */
-    .feed-collage {
-      width: 100%;
+    /* ── Masonry collage on card front ───────────────────────────── */
+    .card-collage {
+      display: block;
+      columns: 2;
+      column-gap: 3px;
+      padding: 3px;
       background: var(--color-surface-soft);
       border-bottom: 1px solid var(--color-border);
     }
 
-    /* card header */
+    .card-collage-pin {
+      break-inside: avoid;
+      margin-bottom: 3px;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .card-collage-pin img {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: cover;
+    }
+
+    /* mood hover overlay on each pin — same pattern as board.html */
+    .card-collage-pin .pin-mood-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(45,26,23,0.82);
+      backdrop-filter: blur(2px);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 10px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    @media (hover: hover) {
+      .card-collage-pin:hover .pin-mood-overlay { opacity: 1; }
+    }
+
+    .overlay-mood-label {
+      font-size: 0.55rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: rgba(245,237,232,0.6);
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .overlay-bar-row { display: flex; flex-direction: column; gap: 4px; }
+
+    .overlay-bar-item { display: flex; flex-direction: column; gap: 2px; }
+
+    .overlay-bar-name {
+      font-size: 0.52rem;
+      font-weight: 600;
+      color: #f5ede8;
+      text-transform: capitalize;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .overlay-bar-track {
+      width: 100%;
+      height: 4px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .overlay-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: var(--color-accent);
+    }
+
+    /* peek — 2 pins same size, with gradient fade */
+    .card-collage-wrap {
+    position: relative;
+    background: var(--color-surface-soft);
+    border-bottom: 1px solid var(--color-border);
+    overflow: hidden;
+    max-height: 320px;   /* clips naturally, no hard cut */
+  }
+
+  .card-collage-wrap::after {
+    content: "";
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 80px;
+    background: linear-gradient(to top, var(--color-surface-soft), transparent);
+    pointer-events: none;
+  }
+
+  .card-collage-more {
+    position: absolute;
+    bottom: 10px; right: 12px;
+    font-size: 0.65rem; font-weight: 700;
+    color: var(--color-accent);
+    background: rgba(255,253,249,0.85);
+    border: 1px solid rgba(248,131,120,0.3);
+    border-radius: var(--radius-pill);
+    padding: 3px 10px;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+    .card-peek-pin img { width: 100%; height: auto; display: block; }
+
+    
+
+    /* card header + footer */
     .feed-card-header {
       padding: 14px 16px 10px;
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: var(--space-sm);
+      display: flex; align-items: flex-start;
+      justify-content: space-between; gap: var(--space-sm);
     }
-
     .feed-card-board {
       font-family: 'Playfair Display', serif;
-      font-size: 1rem;
-      font-weight: 700;
-      color: var(--color-ebony);
-      line-height: 1.2;
+      font-size: 1rem; font-weight: 700;
+      color: var(--color-ebony); line-height: 1.2;
     }
-
     .feed-card-mood {
-      font-size: 0.68rem;
-      padding: 3px 10px;
+      font-size: 0.68rem; padding: 3px 10px;
       border-radius: var(--radius-pill);
-      background: rgba(248, 131, 120, 0.12);
-      border: 1px solid rgba(248, 131, 120, 0.35);
-      color: var(--color-accent);
-      font-weight: 600;
-      white-space: nowrap;
-      flex-shrink: 0;
-      text-transform: capitalize;
+      background: rgba(248,131,120,0.12);
+      border: 1px solid rgba(248,131,120,0.35);
+      color: var(--color-accent); font-weight: 600;
+      white-space: nowrap; flex-shrink: 0; text-transform: capitalize;
     }
-
-    /* track pills */
-    .feed-tracks {
-      padding: 8px 12px 12px;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 5px;
-    }
-
-    .feed-track {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: var(--color-surface-soft);
-      border-radius: 8px;
-      padding: 5px 7px;
-      border: 1px solid var(--color-border);
-      min-width: 0;
-    }
-
-    .feed-track img {
-      width: 26px;
-      height: 26px;
-      border-radius: 5px;
-      object-fit: cover;
-      flex-shrink: 0;
-    }
-
-    .feed-track-thumb-placeholder {
-      width: 26px;
-      height: 26px;
-      border-radius: 5px;
-      background: var(--color-border);
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 10px;
-    }
-
-    .feed-track-info {
-      min-width: 0;
-    }
-
-    .feed-track-name {
-      font-size: 0.7rem;
-      font-weight: 700;
-      color: var(--color-ebony);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .feed-track-artist {
-      font-size: 0.6rem;
-      color: var(--color-secondary-text);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    /* card footer */
     .feed-card-footer {
       padding: 8px 14px 12px;
-      display: flex;
-      align-items: center;
+      display: flex; align-items: center;
       justify-content: space-between;
       border-top: 1px solid var(--color-border);
     }
-
-    .feed-card-date {
-      font-size: 0.68rem;
-      color: var(--color-secondary-text);
-    }
-
+    .feed-card-date { font-size: 0.68rem; color: var(--color-secondary-text); }
     .feed-spotify-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 0.7rem;
-      font-weight: 700;
-      color: #1DB954;
-      text-decoration: none;
-      padding: 4px 10px;
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 0.7rem; font-weight: 700; color: #1DB954;
+      text-decoration: none; padding: 4px 10px;
       border-radius: var(--radius-pill);
-      border: 1px solid rgba(29, 185, 84, 0.35);
-      background: rgba(29, 185, 84, 0.06);
-      transition: background 0.15s;
+      border: 1px solid rgba(29,185,84,0.35);
+      background: rgba(29,185,84,0.06); transition: background 0.15s;
     }
+    .feed-spotify-link:hover { background: rgba(29,185,84,0.14); }
 
-    .feed-spotify-link:hover {
-      background: rgba(29, 185, 84, 0.14);
-    }
+    /* ── Empty / skeleton ────────────────────────────────────────── */
+    .feed-empty { text-align: center; padding: var(--space-xxl); color: var(--color-secondary-text); }
+    .feed-empty-icon { font-size: 2.5rem; margin-bottom: var(--space-md); opacity: 0.5; }
+    .feed-empty h3 { margin: 0 0 var(--space-sm); font-size: 1.2rem; color: var(--color-ebony); }
+    .feed-empty p { font-size: 0.92rem; max-width: 360px; margin: 0 auto; }
 
-    /* ── Empty / loading states ──────────────────────────────────── */
-
-    .feed-empty {
-      grid-column: 1 / -1;
-      text-align: center;
-      padding: var(--space-xxl);
-      color: var(--color-secondary-text);
-    }
-
-    .feed-empty-icon {
-      font-size: 2.5rem;
-      margin-bottom: var(--space-md);
-      opacity: 0.5;
-    }
-
-    .feed-empty h3 {
-      margin: 0 0 var(--space-sm);
-      font-size: 1.2rem;
-      color: var(--color-ebony);
-    }
-
-    .feed-empty p {
-      font-size: 0.92rem;
-      max-width: 360px;
-      margin: 0 auto;
-    }
-
-    /* skeleton cards */
     .feed-skeleton {
-      break-inside: avoid;
-      margin-bottom: var(--space-md);
-      border-radius: var(--radius-lg);
-      overflow: hidden;
+      break-inside: avoid; margin-bottom: var(--space-md);
+      border-radius: var(--radius-lg); overflow: hidden;
       border: 1px solid var(--color-border);
     }
-
     .skeleton-block {
-      background: linear-gradient(
-        90deg,
-        var(--color-surface-soft) 25%,
-        var(--color-border) 50%,
-        var(--color-surface-soft) 75%
-      );
+      background: linear-gradient(90deg, var(--color-surface-soft) 25%, var(--color-border) 50%, var(--color-surface-soft) 75%);
       background-size: 200% 100%;
       animation: shimmer-slide 1.4s infinite;
     }
+    @keyframes shimmer-slide { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-    @keyframes shimmer-slide {
-      0%   { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
-
-    /* ── Load more ───────────────────────────────────────────────── */
-
-    .load-more-wrap {
-      display: flex;
-      justify-content: center;
-      padding-top: var(--space-md);
-    }
+    .load-more-wrap { display: flex; justify-content: center; padding-top: var(--space-md); }
 
     /* ── Lightbox ────────────────────────────────────────────────── */
-
     .lightbox-backdrop {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(45, 26, 23, 0.7);
-      backdrop-filter: blur(6px);
-      z-index: 100;
-      align-items: center;
-      justify-content: center;
+      display: none; position: fixed; inset: 0;
+      background: rgba(45,26,23,0.7); backdrop-filter: blur(6px);
+      z-index: 100; align-items: center; justify-content: center;
       padding: var(--space-lg);
     }
-
-    .lightbox-backdrop.open {
-      display: flex;
-    }
+    .lightbox-backdrop.open { display: flex; }
 
     .lightbox {
       background: var(--color-surface);
       border-radius: var(--radius-lg);
       border: 1px solid var(--color-border);
       box-shadow: var(--shadow-card);
-      width: 100%;
-      max-width: 860px;
-      max-height: 90vh;
+      width: 100%; max-width: 860px; max-height: 90vh;
       overflow-y: auto;
-      display: grid;
-      grid-template-columns: 1fr 300px;
+      display: grid; grid-template-columns: 1fr 300px;
+      position: relative;
     }
 
     .lightbox-collage-col {
       background: var(--color-surface-soft);
       border-right: 1px solid var(--color-border);
       min-height: 400px;
+      padding: 3px;
     }
 
-    .lightbox-info-col {
-      padding: var(--space-xl);
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-lg);
+    /* masonry inside lightbox */
+    .lb-masonry {
+      display: block;
+      columns: 3;
+      column-gap: 3px;
     }
 
-    .lightbox-close {
-      position: absolute;
-      top: var(--space-md);
-      right: var(--space-md);
-      background: var(--color-surface);
+    .lb-masonry-pin {
+      break-inside: avoid;
+      margin-bottom: 3px;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .lb-masonry-pin img { width: 100%; height: auto; display: block; }
+
+    /* analytics pin inside lightbox masonry */
+    .lb-analytics-pin {
+      break-inside: avoid;
+      margin-bottom: 3px;
+      border-radius: 6px;
       border: 1px solid var(--color-border);
-      border-radius: 50%;
-      width: 36px;
-      height: 36px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1rem;
-      cursor: pointer;
-      color: var(--color-secondary-text);
-      z-index: 10;
-    }
-
-    .lightbox-board-name {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.6rem;
-      font-weight: 700;
-      margin: 0 0 4px;
-      color: var(--color-ebony);
-    }
-
-    .lightbox-mood {
-      display: inline-block;
-      font-size: 0.75rem;
-      padding: 4px 12px;
-      border-radius: var(--radius-pill);
-      background: rgba(248, 131, 120, 0.15);
-      border: 1px solid rgba(248, 131, 120, 0.4);
-      color: var(--color-accent);
-      font-weight: 600;
-      text-transform: capitalize;
-    }
-
-    .lightbox-tracks-heading {
-      font-size: 0.72rem;
-      text-transform: uppercase;
-      letter-spacing: 0.22em;
-      color: var(--color-secondary-text);
-      margin: 0 0 var(--space-sm);
-    }
-
-    .lightbox-tracks {
+      background: var(--color-surface);
+      padding: 10px;
       display: flex;
       flex-direction: column;
       gap: 6px;
     }
 
+    .lb-analytics-label {
+      font-size: 0.58rem; text-transform: uppercase;
+      letter-spacing: 0.2em; color: var(--color-secondary-text); font-weight: 700;
+    }
+
+    .lb-analytics-bar-row {
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    .lb-analytics-bar-name {
+      font-size: 0.55rem; font-weight: 600;
+      color: var(--color-secondary-text);
+      text-transform: capitalize;
+      width: 80px; flex-shrink: 0;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    .lb-analytics-bar-track {
+      flex: 1; height: 4px;
+      background: var(--color-border);
+      border-radius: 999px; overflow: hidden;
+    }
+
+    .lb-analytics-bar-fill {
+      height: 100%; border-radius: 999px;
+      background: var(--color-accent);
+    }
+
+    .lb-analytics-divider { height: 1px; background: var(--color-border); }
+
+    .lb-analytics-song-row { display: flex; align-items: center; gap: 5px; }
+
+    .lb-analytics-song-dot {
+      width: 4px; height: 4px; border-radius: 50%;
+      background: var(--color-accent); flex-shrink: 0;
+    }
+
+    .lb-analytics-song-name {
+      font-size: 0.55rem; font-weight: 700;
+      color: var(--color-ebony);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    .lightbox-info-col {
+      padding: var(--space-xl);
+      display: flex; flex-direction: column; gap: var(--space-lg);
+    }
+    .lightbox-close {
+      position: absolute; top: var(--space-md); right: var(--space-md);
+      background: var(--color-surface); border: 1px solid var(--color-border);
+      border-radius: 50%; width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; cursor: pointer; color: var(--color-secondary-text); z-index: 10;
+    }
+    .lightbox-board-name {
+      font-family: 'Playfair Display', serif; font-size: 1.6rem;
+      font-weight: 700; margin: 0 0 4px; color: var(--color-ebony);
+    }
+    .lightbox-mood {
+      display: inline-block; font-size: 0.75rem; padding: 4px 12px;
+      border-radius: var(--radius-pill);
+      background: rgba(248,131,120,0.15); border: 1px solid rgba(248,131,120,0.4);
+      color: var(--color-accent); font-weight: 600; text-transform: capitalize;
+    }
+    .lightbox-tracks-heading {
+      font-size: 0.72rem; text-transform: uppercase;
+      letter-spacing: 0.22em; color: var(--color-secondary-text); margin: 0 0 var(--space-sm);
+    }
+    .lightbox-tracks { display: flex; flex-direction: column; gap: 6px; }
     .lightbox-track {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 7px 10px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--color-border);
+      display: flex; align-items: center; gap: 8px; padding: 7px 10px;
+      border-radius: var(--radius-sm); border: 1px solid var(--color-border);
       background: var(--color-surface-soft);
     }
-
-    .lightbox-track img {
-      width: 32px;
-      height: 32px;
-      border-radius: 6px;
-      object-fit: cover;
-      flex-shrink: 0;
-    }
-
-    .lightbox-track-name {
-      font-size: 0.82rem;
-      font-weight: 700;
-      color: var(--color-ebony);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .lightbox-track-artist {
-      font-size: 0.72rem;
-      color: var(--color-secondary-text);
-    }
-
+    .lightbox-track img { width: 32px; height: 32px; border-radius: 6px; object-fit: cover; flex-shrink: 0; }
+    .lightbox-track-name { font-size: 0.82rem; font-weight: 700; color: var(--color-ebony); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .lightbox-track-artist { font-size: 0.72rem; color: var(--color-secondary-text); }
     .lightbox-spotify-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 18px;
-      background: #1DB954;
-      color: #000;
-      border: none;
-      border-radius: var(--radius-pill);
-      font-family: 'Manrope', sans-serif;
-      font-size: 0.82rem;
-      font-weight: 700;
-      text-decoration: none;
-      cursor: pointer;
-      transition: opacity 0.2s;
-      align-self: flex-start;
+      display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px;
+      background: #1DB954; color: #000; border: none;
+      border-radius: var(--radius-pill); font-family: 'Manrope', sans-serif;
+      font-size: 0.82rem; font-weight: 700; text-decoration: none;
+      cursor: pointer; transition: opacity 0.2s; align-self: flex-start;
     }
-
     .lightbox-spotify-btn:hover { opacity: 0.88; }
-
-    .lightbox-date {
-      font-size: 0.72rem;
-      color: var(--color-secondary-text);
-      margin-top: auto;
-    }
+    .lightbox-date { font-size: 0.72rem; color: var(--color-secondary-text); margin-top: auto; }
 
     @media (max-width: 700px) {
-      .lightbox {
-        grid-template-columns: 1fr;
-      }
-
-      .lightbox-collage-col {
-        border-right: none;
-        border-bottom: 1px solid var(--color-border);
-      }
-
-      .feed-grid {
-        columns: 2 160px;
-      }
+      .lightbox { grid-template-columns: 1fr; }
+      .lightbox-collage-col { border-right: none; border-bottom: 1px solid var(--color-border); }
+      .feed-grid { columns: 2 160px; }
+      .lb-masonry { columns: 2; }
     }
   </style>
 </head>
@@ -505,7 +401,6 @@
     <div class="ambient-grid"></div>
     <main class="app-shell">
 
-      <!-- ── Hero ────────────────────────────────────────────────── -->
       <div class="explore-hero">
         <div class="explore-hero-text">
           <p class="eyebrow">community</p>
@@ -524,7 +419,6 @@
         </div>
       </div>
 
-      <!-- ── Nav back ─────────────────────────────────────────────── -->
       <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:var(--space-md);">
         <a class="back-link" href="index.html">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -533,79 +427,67 @@
           Back home
         </a>
         <a href="explore-scroll.html">Doom Scroll!!</a>
-        <!-- Filter chips -->
         <div class="filter-bar" id="filter-bar">
           <span class="filter-label">Mood</span>
           <button class="filter-chip active" data-mood="">All</button>
         </div>
       </div>
 
-      <!-- ── Feed ─────────────────────────────────────────────────── -->
       <div class="feed-grid" id="feed-grid">
-        <!-- skeleton placeholders while loading -->
         <div class="feed-skeleton">
-          <div class="skeleton-block" style="height:200px;"></div>
-          <div style="padding:14px 16px; display:flex; flex-direction:column; gap:8px;">
-            <div class="skeleton-block" style="height:16px; border-radius:8px; width:70%;"></div>
-            <div class="skeleton-block" style="height:12px; border-radius:8px; width:40%;"></div>
+          <div class="skeleton-block" style="height:220px;"></div>
+          <div style="padding:14px 16px;display:flex;flex-direction:column;gap:8px;">
+            <div class="skeleton-block" style="height:16px;border-radius:8px;width:70%;"></div>
+            <div class="skeleton-block" style="height:12px;border-radius:8px;width:40%;"></div>
           </div>
         </div>
         <div class="feed-skeleton">
-          <div class="skeleton-block" style="height:260px;"></div>
-          <div style="padding:14px 16px; display:flex; flex-direction:column; gap:8px;">
-            <div class="skeleton-block" style="height:16px; border-radius:8px; width:65%;"></div>
-            <div class="skeleton-block" style="height:12px; border-radius:8px; width:45%;"></div>
+          <div class="skeleton-block" style="height:280px;"></div>
+          <div style="padding:14px 16px;display:flex;flex-direction:column;gap:8px;">
+            <div class="skeleton-block" style="height:16px;border-radius:8px;width:65%;"></div>
+            <div class="skeleton-block" style="height:12px;border-radius:8px;width:45%;"></div>
           </div>
         </div>
         <div class="feed-skeleton">
-          <div class="skeleton-block" style="height:180px;"></div>
-          <div style="padding:14px 16px; display:flex; flex-direction:column; gap:8px;">
-            <div class="skeleton-block" style="height:16px; border-radius:8px; width:75%;"></div>
-            <div class="skeleton-block" style="height:12px; border-radius:8px; width:35%;"></div>
+          <div class="skeleton-block" style="height:190px;"></div>
+          <div style="padding:14px 16px;display:flex;flex-direction:column;gap:8px;">
+            <div class="skeleton-block" style="height:16px;border-radius:8px;width:75%;"></div>
+            <div class="skeleton-block" style="height:12px;border-radius:8px;width:35%;"></div>
           </div>
         </div>
       </div>
 
-      <!-- Load more -->
       <div class="load-more-wrap" id="load-more-wrap" style="display:none;">
         <button class="btn-outline" id="load-more-btn">Load more</button>
       </div>
 
     </main>
-
     <footer class="footer">
       <span>© 2026 PinClip by Bill Quach</span>
       <a href="privacy.html">Privacy policy</a>
     </footer>
   </div>
 
-  <!-- ── Lightbox ─────────────────────────────────────────────────── -->
+  <!-- Lightbox -->
   <div class="lightbox-backdrop" id="lightbox">
-    <div class="lightbox" id="lightbox-inner" style="position:relative;">
+    <div class="lightbox" id="lightbox-inner">
       <button class="lightbox-close" id="lightbox-close">✕</button>
-
-      <!-- left: full collage -->
       <div class="lightbox-collage-col" id="lb-collage"></div>
-
-      <!-- right: info -->
       <div class="lightbox-info-col">
         <div>
           <h2 class="lightbox-board-name" id="lb-board-name"></h2>
           <span class="lightbox-mood" id="lb-mood"></span>
         </div>
-
         <div>
           <p class="lightbox-tracks-heading">Top Songs</p>
           <div class="lightbox-tracks" id="lb-tracks"></div>
         </div>
-
         <a class="lightbox-spotify-btn" id="lb-spotify-link" href="#" target="_blank" rel="noopener noreferrer" style="display:none;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
           </svg>
           Open playlist on Spotify
         </a>
-
         <p class="lightbox-date" id="lb-date"></p>
       </div>
     </div>
@@ -615,11 +497,7 @@
     const FLASK_URL = "http://localhost:5000";
     const PAGE_SIZE = 20;
 
-    let offset       = 0;
-    let allCards     = [];   // all fetched so far
-    let filtered     = [];   // after mood filter
-    let activeMood   = "";
-    let totalFetched = 0;
+    let offset = 0, allCards = [], filtered = [], activeMood = "";
 
     const feedGrid     = document.getElementById("feed-grid");
     const loadMoreWrap = document.getElementById("load-more-wrap");
@@ -627,72 +505,48 @@
     const filterBar    = document.getElementById("filter-bar");
     const statCards    = document.getElementById("stat-cards");
     const statMoods    = document.getElementById("stat-moods");
-
-    // lightbox
-    const lightbox      = document.getElementById("lightbox");
-    const lbClose       = document.getElementById("lightbox-close");
-    const lbBoardName   = document.getElementById("lb-board-name");
-    const lbMood        = document.getElementById("lb-mood");
-    const lbCollage     = document.getElementById("lb-collage");
-    const lbTracks      = document.getElementById("lb-tracks");
-    const lbSpotifyLink = document.getElementById("lb-spotify-link");
-    const lbDate        = document.getElementById("lb-date");
+    const lightbox     = document.getElementById("lightbox");
+    const lbClose      = document.getElementById("lightbox-close");
+    const lbBoardName  = document.getElementById("lb-board-name");
+    const lbMood       = document.getElementById("lb-mood");
+    const lbCollage    = document.getElementById("lb-collage");
+    const lbTracks     = document.getElementById("lb-tracks");
+    const lbSpotify    = document.getElementById("lb-spotify-link");
+    const lbDate       = document.getElementById("lb-date");
 
     // ── Fetch ──────────────────────────────────────────────────────
     async function fetchCards(reset = false) {
-      if (reset) {
-        offset = 0;
-        allCards = [];
-      }
-
+      if (reset) { offset = 0; allCards = []; }
       try {
         const resp = await fetch(`${FLASK_URL}/explore/feed?limit=${PAGE_SIZE}&offset=${offset}`);
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const data = await resp.json();
         const newCards = data.cards ?? [];
-
         allCards.push(...newCards);
         offset += newCards.length;
-        totalFetched = allCards.length;
-
-        // build mood filter chips from all seen moods
         buildMoodChips();
         applyFilter();
         updateStats();
-
-        // show/hide load more
         loadMoreWrap.style.display = newCards.length === PAGE_SIZE ? "flex" : "none";
-
       } catch (err) {
-        console.error("Explore feed error:", err);
-        feedGrid.innerHTML = `
-          <div class="feed-empty" style="column-span:all;">
-            <div class="feed-empty-icon">⚠️</div>
-            <h3>Couldn't load the feed</h3>
-            <p>Make sure Flask is running on port 5000.</p>
-          </div>`;
+        console.error(err);
+        feedGrid.innerHTML = `<div class="feed-empty"><div class="feed-empty-icon">⚠️</div><h3>Couldn't load the feed</h3><p>Make sure Flask is running on port 5000.</p></div>`;
       }
     }
 
-    // ── Stats ──────────────────────────────────────────────────────
     function updateStats() {
       statCards.textContent = allCards.length;
-      const moods = new Set(allCards.map(c => c.mood).filter(Boolean));
-      statMoods.textContent = moods.size || "—";
+      statMoods.textContent = new Set(allCards.map(c => c.mood).filter(Boolean)).size || "—";
     }
 
     // ── Mood chips ────────────────────────────────────────────────
     function buildMoodChips() {
       const seen = new Set(allCards.map(c => c.mood).filter(Boolean));
-      const existing = new Set(
-        [...filterBar.querySelectorAll(".filter-chip[data-mood]")]
-          .map(el => el.dataset.mood)
-      );
-
+      const existing = new Set([...filterBar.querySelectorAll(".filter-chip[data-mood]")].map(el => el.dataset.mood));
       seen.forEach(mood => {
         if (existing.has(mood)) return;
         const btn = document.createElement("button");
-        btn.className   = "filter-chip";
+        btn.className = "filter-chip";
         btn.dataset.mood = mood;
         btn.textContent = mood;
         btn.addEventListener("click", () => setMoodFilter(mood));
@@ -702,36 +556,23 @@
 
     function setMoodFilter(mood) {
       activeMood = mood;
-      filterBar.querySelectorAll(".filter-chip").forEach(chip => {
-        chip.classList.toggle("active", chip.dataset.mood === mood);
-      });
+      filterBar.querySelectorAll(".filter-chip").forEach(c => c.classList.toggle("active", c.dataset.mood === mood));
       applyFilter();
     }
 
-    filterBar.querySelector(".filter-chip[data-mood='']")
-      .addEventListener("click", () => setMoodFilter(""));
+    filterBar.querySelector(".filter-chip[data-mood='']").addEventListener("click", () => setMoodFilter(""));
 
-    // ── Filter & render ───────────────────────────────────────────
     function applyFilter() {
-      filtered = activeMood
-        ? allCards.filter(c => c.mood === activeMood)
-        : [...allCards];
+      filtered = activeMood ? allCards.filter(c => c.mood === activeMood) : [...allCards];
       renderFeed(filtered);
     }
 
     function renderFeed(cards) {
       feedGrid.innerHTML = "";
-
       if (!cards.length) {
-        feedGrid.innerHTML = `
-          <div class="feed-empty" style="column-span:all;">
-            <div class="feed-empty-icon">🎵</div>
-            <h3>Nothing here yet</h3>
-            <p>Be the first to share a playlist card from your board.</p>
-          </div>`;
+        feedGrid.innerHTML = `<div class="feed-empty"><div class="feed-empty-icon">🎵</div><h3>Nothing here yet</h3><p>Be the first to share a playlist card from your board.</p></div>`;
         return;
       }
-
       cards.forEach((card, i) => {
         const el = buildCard(card);
         el.style.animationDelay = `${Math.min(i * 55, 440)}ms`;
@@ -739,48 +580,123 @@
       });
     }
 
-    // ── Build one card ─────────────────────────────────────────────
+    // ── Masonry collage for card front (no analytics pin) ─────────
+    function buildFrontCollage(card) {
+    const images = card.pin_images ?? [];
+    const hasMore = images.length > 3;
+
+    const wrap = document.createElement("div");
+    wrap.className = "card-collage-wrap";
+
+    const masonry = document.createElement("div");
+    masonry.className = "card-collage";
+
+    images.slice(0, 5).forEach((url, i) => {   // show up to 5, all in same masonry
+      const pin = document.createElement("div");
+      pin.className = "card-collage-pin";
+
+      const img = document.createElement("img");
+      img.src = url;
+      img.alt = "";
+      img.loading = i === 0 ? "eager" : "lazy";
+      pin.appendChild(img);
+
+      if ((card.board_moods ?? []).length) {
+        const overlay = document.createElement("div");
+        overlay.className = "pin-mood-overlay";
+        let ohtml = `<div class="overlay-mood-label">Board Mood</div><div class="overlay-bar-row">`;
+        card.board_moods.forEach(m => {
+          ohtml += `
+            <div class="overlay-bar-item">
+              <span class="overlay-bar-name">${esc(m.label)}</span>
+              <div class="overlay-bar-track">
+                <div class="overlay-bar-fill" style="width:${Math.round(m.score*100)}%"></div>
+              </div>
+            </div>`;
+        });
+        ohtml += `</div>`;
+        overlay.innerHTML = ohtml;
+        pin.appendChild(overlay);
+      }
+
+      masonry.appendChild(pin);
+    });
+
+    wrap.appendChild(masonry);
+
+    if (hasMore) {
+      const more = document.createElement("div");
+      more.className = "card-collage-more";
+      more.textContent = `+${images.length - 3} more`;
+      wrap.appendChild(more);
+    }
+
+    return wrap;
+  }
+
+    // ── Masonry collage for lightbox (with analytics pin at end) ──
+    function buildLightboxCollage(card) {
+      const masonry = document.createElement("div");
+      masonry.className = "lb-masonry";
+
+      (card.pin_images ?? []).forEach((url, i) => {
+        const pin = document.createElement("div");
+        pin.className = "lb-masonry-pin";
+        const img = document.createElement("img");
+        img.src     = url;
+        img.alt     = "";
+        img.loading = i < 3 ? "eager" : "lazy";
+        pin.appendChild(img);
+        masonry.appendChild(pin);
+      });
+
+      // analytics pin — last item in masonry flow
+      const atile = document.createElement("div");
+      atile.className = "lb-analytics-pin";
+
+      let ahtml = `<div class="lb-analytics-label">Board Mood</div>`;
+      (card.board_moods ?? []).forEach(m => {
+        ahtml += `
+          <div class="lb-analytics-bar-row">
+            <span class="lb-analytics-bar-name">${esc(m.label)}</span>
+            <div class="lb-analytics-bar-track">
+              <div class="lb-analytics-bar-fill" style="width:${Math.round(m.score*100)}%"></div>
+            </div>
+          </div>`;
+      });
+
+      if ((card.board_moods ?? []).length && (card.tracks ?? []).length) {
+        ahtml += `<div class="lb-analytics-divider"></div>`;
+      }
+
+      (card.tracks ?? []).slice(0, 3).forEach(t => {
+        ahtml += `
+          <div class="lb-analytics-song-row">
+            <div class="lb-analytics-song-dot"></div>
+            <span class="lb-analytics-song-name">${esc(t.name)}</span>
+          </div>`;
+      });
+
+      atile.innerHTML = ahtml;
+      masonry.appendChild(atile);
+
+      return masonry;
+    }
+
+    // ── Build one feed card ───────────────────────────────────────
     function buildCard(card) {
       const wrap = document.createElement("div");
       wrap.className = "feed-card";
       wrap.addEventListener("click", () => openLightbox(card));
+      wrap.appendChild(buildFrontCollage(card));
 
-      // collage
-      const collage = buildCollage(card.pin_images, "feed");
-      wrap.appendChild(collage);
-
-      // header
       const header = document.createElement("div");
       header.className = "feed-card-header";
       header.innerHTML = `
         <div class="feed-card-board">${esc(card.board_name)}</div>
-        ${card.mood ? `<span class="feed-card-mood">${esc(card.mood)}</span>` : ""}
-      `;
+        ${card.mood ? `<span class="feed-card-mood">${esc(card.mood)}</span>` : ""}`;
       wrap.appendChild(header);
 
-      // tracks grid
-      if (card.tracks?.length) {
-        const trackGrid = document.createElement("div");
-        trackGrid.className = "feed-tracks";
-        card.tracks.slice(0, 4).forEach(track => {
-          const pill = document.createElement("div");
-          pill.className = "feed-track";
-          const thumb = track.thumbnail
-            ? `<img src="${esc(track.thumbnail)}" alt="${esc(track.name)}" loading="lazy" />`
-            : `<div class="feed-track-thumb-placeholder">♪</div>`;
-          pill.innerHTML = `
-            ${thumb}
-            <div class="feed-track-info">
-              <div class="feed-track-name">${esc(track.name)}</div>
-              <div class="feed-track-artist">${esc(track.artist)}</div>
-            </div>
-          `;
-          trackGrid.appendChild(pill);
-        });
-        wrap.appendChild(trackGrid);
-      }
-
-      // footer
       const footer = document.createElement("div");
       footer.className = "feed-card-footer";
       const dateStr = card.created_at ? formatDate(card.created_at) : "";
@@ -791,57 +707,9 @@
               <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
             </svg>
             Listen
-          </a>`
-        : "";
-      footer.innerHTML = `
-        <span class="feed-card-date">${dateStr}</span>
-        ${spotifyHtml}
-      `;
+          </a>` : "";
+      footer.innerHTML = `<span class="feed-card-date">${dateStr}</span>${spotifyHtml}`;
       wrap.appendChild(footer);
-
-      return wrap;
-    }
-
-    // ── Collage builder (reusable) ─────────────────────────────────
-    function buildCollage(images, size = "feed") {
-      const wrap = document.createElement("div");
-      wrap.className = "feed-collage";
-
-      if (!images?.length) {
-        wrap.style.height = "120px";
-        return wrap;
-      }
-
-      const cols = images.length <= 2 ? 2 : images.length <= 4 ? 2 : 3;
-      const heights = size === "lightbox"
-        ? [200, 270, 220, 250, 170, 230, 210, 260]
-        : [130, 175, 145, 165, 110, 150, 135, 160];
-
-      wrap.style.cssText = `
-        display: block;
-        columns: ${cols};
-        column-gap: 4px;
-        padding: 4px;
-        background: var(--color-surface-soft);
-      `;
-
-      images.forEach((url, i) => {
-        const pin = document.createElement("div");
-        pin.style.cssText = `
-          break-inside: avoid;
-          margin-bottom: 4px;
-          border-radius: 10px;
-          overflow: hidden;
-          height: ${heights[i % heights.length]}px;
-        `;
-        const img = document.createElement("img");
-        img.src           = url;
-        img.alt           = "";
-        img.loading       = "lazy";
-        img.style.cssText = "width:100%;height:100%;object-fit:cover;display:block;";
-        pin.appendChild(img);
-        wrap.appendChild(pin);
-      });
 
       return wrap;
     }
@@ -853,14 +721,9 @@
       lbMood.style.display    = card.mood ? "inline-block" : "none";
       lbDate.textContent      = card.created_at ? `Shared ${formatDate(card.created_at)}` : "";
 
-      // collage
       lbCollage.innerHTML = "";
-      const col = buildCollage(card.pin_images, "lightbox");
-      col.style.height     = "100%";
-      col.style.minHeight  = "400px";
-      lbCollage.appendChild(col);
+      lbCollage.appendChild(buildLightboxCollage(card));
 
-      // tracks
       lbTracks.innerHTML = "";
       (card.tracks ?? []).forEach(track => {
         const row = document.createElement("div");
@@ -868,22 +731,15 @@
         const thumb = track.thumbnail
           ? `<img src="${esc(track.thumbnail)}" alt="${esc(track.name)}" />`
           : `<div style="width:32px;height:32px;border-radius:6px;background:var(--color-border);flex-shrink:0;"></div>`;
-        row.innerHTML = `
-          ${thumb}
-          <div>
-            <div class="lightbox-track-name">${esc(track.name)}</div>
-            <div class="lightbox-track-artist">${esc(track.artist)}</div>
-          </div>
-        `;
+        row.innerHTML = `${thumb}<div><div class="lightbox-track-name">${esc(track.name)}</div><div class="lightbox-track-artist">${esc(track.artist)}</div></div>`;
         lbTracks.appendChild(row);
       });
 
-      // spotify button
       if (card.playlist_id) {
-        lbSpotifyLink.href         = `https://open.spotify.com/playlist/${card.playlist_id}`;
-        lbSpotifyLink.style.display = "inline-flex";
+        lbSpotify.href         = `https://open.spotify.com/playlist/${card.playlist_id}`;
+        lbSpotify.style.display = "inline-flex";
       } else {
-        lbSpotifyLink.style.display = "none";
+        lbSpotify.style.display = "none";
       }
 
       lightbox.classList.add("open");
@@ -899,35 +755,21 @@
     lightbox.addEventListener("click", e => { if (e.target === lightbox) closeLightbox(); });
     document.addEventListener("keydown", e => { if (e.key === "Escape") closeLightbox(); });
 
-    // ── Load more ────────────────────────────────────────────────
     loadMoreBtn.addEventListener("click", () => {
-      loadMoreBtn.disabled    = true;
+      loadMoreBtn.disabled = true;
       loadMoreBtn.textContent = "Loading…";
-      fetchCards(false).then(() => {
-        loadMoreBtn.disabled    = false;
-        loadMoreBtn.textContent = "Load more";
-      });
+      fetchCards(false).then(() => { loadMoreBtn.disabled = false; loadMoreBtn.textContent = "Load more"; });
     });
 
-    // ── Helpers ───────────────────────────────────────────────────
     function esc(str) {
-      return String(str ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
+      return String(str ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
     }
 
     function formatDate(iso) {
-      try {
-        return new Intl.DateTimeFormat("en-US", {
-          month: "short", day: "numeric", year: "numeric"
-        }).format(new Date(iso));
-      } catch { return ""; }
+      try { return new Intl.DateTimeFormat("en-US",{month:"short",day:"numeric",year:"numeric"}).format(new Date(iso)); }
+      catch { return ""; }
     }
 
-    // ── Boot ──────────────────────────────────────────────────────
     fetchCards(true);
   </script>
 </body>

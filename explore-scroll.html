@@ -14,447 +14,424 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --accent:       #F88378;
-      --accent-2:     #7aa78a;
-      --surface:      #1a1210;
-      --surface-2:    #241714;
-      --border:       rgba(255,255,255,0.08);
-      --text:         #f5ede8;
-      --muted:        rgba(245,237,232,0.5);
-      --spotify:      #1DB954;
-      --radius-pill:  999px;
-      --radius-md:    18px;
-      --radius-sm:    12px;
+      --accent:      #F88378;
+      --surface:     #1a1210;
+      --surface-2:   #241714;
+      --border:      rgba(255,255,255,0.08);
+      --text:        #f5ede8;
+      --muted:       rgba(245,237,232,0.5);
+      --spotify:     #1DB954;
+      --radius-pill: 999px;
+      --radius-md:   18px;
+      --radius-sm:   12px;
     }
 
-    html, body {
-      height: 100%;
-      overflow: hidden;
-      background: var(--surface);
-      font-family: 'Manrope', sans-serif;
-      color: var(--text);
-    }
+    html, body { height: 100%; overflow: hidden; background: var(--surface); font-family: 'Manrope', sans-serif; color: var(--text); }
 
     /* ── Top bar ───────────────────────────────────────────────────── */
     .top-bar {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 50;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+      display: flex; align-items: center; justify-content: space-between;
       padding: 14px 20px;
       background: linear-gradient(to bottom, rgba(26,18,16,0.95) 0%, transparent 100%);
       pointer-events: none;
     }
-
     .top-bar > * { pointer-events: all; }
-
-    .top-bar-brand {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--accent);
-      text-decoration: none;
-      letter-spacing: 0.02em;
-    }
-
-    .top-bar-actions {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-
+    .top-bar-brand { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; color: var(--accent); text-decoration: none; }
+    .top-bar-actions { display: flex; gap: 10px; align-items: center; }
     .top-bar-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 7px 14px;
-      border-radius: var(--radius-pill);
-      border: 1px solid var(--border);
-      background: rgba(26,18,16,0.7);
-      backdrop-filter: blur(8px);
-      color: var(--muted);
-      font-family: 'Manrope', sans-serif;
-      font-size: 0.75rem;
-      font-weight: 600;
-      cursor: pointer;
-      text-decoration: none;
-      transition: color 0.18s, border-color 0.18s;
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 14px; border-radius: var(--radius-pill);
+      border: 1px solid var(--border); background: rgba(26,18,16,0.7);
+      backdrop-filter: blur(8px); color: var(--muted);
+      font-family: 'Manrope', sans-serif; font-size: 0.75rem; font-weight: 600;
+      cursor: pointer; text-decoration: none; transition: color 0.18s, border-color 0.18s;
     }
+    .top-bar-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
 
-    .top-bar-btn:hover {
-      color: var(--text);
-      border-color: rgba(255,255,255,0.2);
+    /* counter pill */
+    .counter-pill {
+      position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
+      z-index: 50; background: rgba(26,18,16,0.75); backdrop-filter: blur(8px);
+      border: 1px solid var(--border); border-radius: var(--radius-pill);
+      padding: 4px 14px; font-size: 0.72rem; color: var(--muted); font-weight: 600; pointer-events: none;
     }
+    /* ── Desktop: constrain card to a centered board ───────────── */
+    /* ── Desktop: constrain card to a centered board ───────────── */
+    @media (min-width: 700px) {
+      .scroll-feed {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        scroll-snap-type: y mandatory;
+        gap: 20px;
+        padding: 20px 0;
+      }
 
-    /* ── Scroll container ──────────────────────────────────────────── */
+      /* wrapper that holds the image card + info panel side by side */
+      .scroll-card {
+        width: 660px;
+        flex-shrink: 0;
+        height: calc(100vh - 40px);
+        margin: 20px 0;
+        scroll-snap-align: center;
+        background: transparent;      /* card itself becomes the row wrapper */
+        overflow: visible;             /* let info panel sit outside */
+        display: flex;
+        flex-direction: row;
+        gap: 12px;
+        align-items: stretch;
+        box-shadow: none;              /* shadow moves to children */
+      }
+
+      /* the actual image collage card */
+      .sc-bg,
+      .sc-content {
+        border-radius: var(--radius-md);
+        overflow: hidden;
+      }
+
+      .sc-bg {
+        border-radius: var(--radius-md);
+      }
+
+      /* collage takes up left portion, full height */
+      .sc-content {
+        flex: 1;
+        min-width: 0;
+        position: relative;
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+      }
+
+      .sc-collage-wrap {
+        margin-top: 0;
+        height: 100%;
+      }
+
+      /* hide the bottom info panel — info moves to side panel */
+      .sc-info {
+        display: none;
+      }
+
+      /* side info panel injected as sibling */
+      .sc-side-panel {
+        width: 220px;
+        flex-shrink: 0;
+        height: 100%;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 24px 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+        overflow-y: auto;
+      }
+
+      .sc-side-panel::-webkit-scrollbar { display: none; }
+      .sc-side-panel { scrollbar-width: none; }
+    }
+    /* ── Scroll feed ───────────────────────────────────────────────── */
     .scroll-feed {
-      height: 100vh;
-      overflow-y: scroll;
-      scroll-snap-type: y mandatory;
-      -webkit-overflow-scrolling: touch;
+      height: 100vh; overflow-y: scroll;
+      scroll-snap-type: y mandatory; -webkit-overflow-scrolling: touch;
     }
-
-    /* Hide scrollbar but keep scroll */
     .scroll-feed::-webkit-scrollbar { display: none; }
     .scroll-feed { scrollbar-width: none; }
 
     /* ── Each card ─────────────────────────────────────────────────── */
     .scroll-card {
-      height: 100vh;
-      scroll-snap-align: start;
-      scroll-snap-stop: always;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
+      height: 100vh; scroll-snap-align: start; scroll-snap-stop: always;
+      position: relative; display: flex; flex-direction: column; overflow: hidden;
     }
 
-    /* blurred collage background */
+    /* blurred bg */
     .sc-bg {
-      position: absolute;
-      inset: 0;
-      background-size: cover;
-      background-position: center;
+      position: absolute; inset: 0;
+      background-size: cover; background-position: center;
       filter: blur(28px) brightness(0.35) saturate(1.4);
       transform: scale(1.12);
-      transition: background-image 0.4s ease;
     }
 
-    /* foreground content */
-    .sc-content {
-      position: relative;
-      z-index: 2;
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-    }
+    .sc-content { position: relative; z-index: 2; display: flex; flex-direction: column; height: 100%; }
 
-    /* collage fills most of the screen */
-    .sc-collage-area {
+    /* collage fills entire card above info panel */
+    .sc-collage-wrap {
       flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 70px 16px 12px;
       min-height: 0;
-    }
-
-    .sc-collage-inner {
-      width: 100%;
-      max-width: 420px;
-      height: 100%;
-      border-radius: var(--radius-md);
+      position: relative;
       overflow: hidden;
-      box-shadow: 0 32px 64px rgba(0,0,0,0.6);
+      margin-top: 52px; /* clears top bar */
     }
 
-    /* collage masonry inside */
-    .sc-mosaic {
+    .sc-masonry {
       display: block;
       columns: 2;
-      column-gap: 4px;
-      padding: 4px;
-      background: #111;
-      height: 100%;
+      column-gap: 3px;
+      padding: 3px;
+      background: transparent;
+      width: 100%;
     }
 
-    .sc-mosaic-pin {
+    .sc-masonry-pin {
       break-inside: avoid;
-      margin-bottom: 4px;
-      border-radius: 10px;
+      margin-bottom: 3px;
+      border-radius: 6px;
       overflow: hidden;
     }
 
-    .sc-mosaic-pin img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
+    .sc-masonry-pin img { width: 100%; height: auto; display: block; }
+
+    /* fade bottom of collage into info panel — no hard border */
+    .sc-collage-wrap::after {
+      content: "";
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 120px;
+      background: linear-gradient(to top, var(--surface) 0%, transparent 100%);
+      pointer-events: none;
     }
 
-    /* bottom info panel */
+    /* +N more pill */
+    .sc-collage-more {
+      position: absolute;
+      bottom: 14px; right: 12px;
+      font-size: 0.62rem; font-weight: 700;
+      color: var(--accent);
+      background: rgba(26,18,16,0.8);
+      border: 1px solid rgba(248,131,120,0.35);
+      border-radius: var(--radius-pill);
+      padding: 3px 10px;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    /* tap hint */
+    .sc-tap-hint {
+      position: absolute; bottom: 14px; left: 12px;
+      background: rgba(26,18,16,0.72);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 999px; padding: 3px 9px;
+      font-size: 0.55rem; color: rgba(245,237,232,0.65);
+      font-weight: 600; pointer-events: none; z-index: 3;
+    }
+
+    /* info panel */
     .sc-info {
-      padding: 12px 20px 28px;
-      background: linear-gradient(to top, rgba(26,18,16,0.98) 0%, rgba(26,18,16,0.6) 100%);
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+      flex-shrink: 0;
+      padding: 12px 18px 28px;
+      display: flex; flex-direction: column; gap: 8px;
+      background: var(--surface);
     }
 
-    .sc-header-row {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 10px;
-    }
+    .sc-masonry-pin img { width: 100%; height: auto; display: block; }
 
-    .sc-board-name {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.3rem;
-      font-weight: 700;
-      color: var(--text);
-      line-height: 1.2;
-    }
+
+    .sc-header-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+
+    .sc-board-name { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 700; color: var(--text); line-height: 1.2; }
 
     .sc-mood-badge {
-      font-size: 0.68rem;
-      padding: 4px 11px;
-      border-radius: var(--radius-pill);
-      background: rgba(248,131,120,0.18);
-      border: 1px solid rgba(248,131,120,0.4);
-      color: var(--accent);
-      font-weight: 600;
-      white-space: nowrap;
-      flex-shrink: 0;
-      text-transform: capitalize;
-      margin-top: 4px;
+      font-size: 0.68rem; padding: 4px 11px; border-radius: var(--radius-pill);
+      background: rgba(248,131,120,0.18); border: 1px solid rgba(248,131,120,0.4);
+      color: var(--accent); font-weight: 600; white-space: nowrap; flex-shrink: 0;
+      text-transform: capitalize; margin-top: 3px;
     }
 
-    /* track pills row */
-    .sc-tracks {
-      display: flex;
-      gap: 6px;
-      overflow-x: auto;
-      padding-bottom: 2px;
-      scrollbar-width: none;
-    }
-
+    /* track pills */
+    .sc-tracks { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
     .sc-tracks::-webkit-scrollbar { display: none; }
 
     .sc-track-pill {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(255,255,255,0.07);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: var(--radius-pill);
-      padding: 5px 10px 5px 5px;
-      white-space: nowrap;
-      flex-shrink: 0;
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius-pill); padding: 5px 10px 5px 5px;
+      white-space: nowrap; flex-shrink: 0;
     }
+    .sc-track-pill img { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; }
+    .sc-track-pill-placeholder { width: 22px; height: 22px; border-radius: 50%; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 10px; }
+    .sc-track-pill-name { font-size: 0.7rem; font-weight: 600; color: var(--text); }
+    .sc-track-pill-artist { font-size: 0.6rem; color: var(--muted); }
 
-    .sc-track-pill img {
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-
-    .sc-track-pill-placeholder {
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 10px;
-    }
-
-    .sc-track-pill-name {
-      font-size: 0.72rem;
-      font-weight: 600;
-      color: var(--text);
-    }
-
-    .sc-track-pill-artist {
-      font-size: 0.62rem;
-      color: var(--muted);
-    }
-
-    /* action row: spotify embed toggle + open link */
-    .sc-action-row {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
+    /* action row */
+    .sc-action-row { display: flex; gap: 8px; align-items: center; }
 
     .sc-spotify-toggle {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 8px 16px;
-      background: var(--spotify);
-      color: #000;
-      border: none;
-      border-radius: var(--radius-pill);
-      font-family: 'Manrope', sans-serif;
-      font-size: 0.78rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: opacity 0.2s;
+      display: flex; align-items: center; gap: 6px; padding: 8px 16px;
+      background: var(--spotify); color: #000; border: none;
+      border-radius: var(--radius-pill); font-family: 'Manrope', sans-serif;
+      font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: opacity 0.2s;
     }
-
     .sc-spotify-toggle:hover { opacity: 0.88; }
     .sc-spotify-toggle:disabled { opacity: 0.4; cursor: default; }
 
     .sc-open-link {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      padding: 8px 14px;
-      border-radius: var(--radius-pill);
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,0.05);
-      color: var(--muted);
-      font-family: 'Manrope', sans-serif;
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-decoration: none;
-      transition: color 0.15s, border-color 0.15s;
+      display: flex; align-items: center; gap: 5px; padding: 8px 14px;
+      border-radius: var(--radius-pill); border: 1px solid var(--border);
+      background: rgba(255,255,255,0.05); color: var(--muted);
+      font-family: 'Manrope', sans-serif; font-size: 0.75rem; font-weight: 600;
+      text-decoration: none; transition: color 0.15s, border-color 0.15s;
     }
-
     .sc-open-link:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
 
-    /* spotify embed container */
-    .sc-embed-wrap {
-      border-radius: var(--radius-sm);
-      overflow: hidden;
-      display: none;
-      height: 80px;
-    }
-
+    .sc-embed-wrap { border-radius: var(--radius-sm); overflow: hidden; display: none; height: 80px; }
     .sc-embed-wrap.visible { display: block; }
+    .sc-embed-wrap iframe { width: 100%; height: 80px; border: none; border-radius: var(--radius-sm); }
 
-    .sc-embed-wrap iframe {
-      width: 100%;
-      height: 80px;
-      border: none;
-      border-radius: var(--radius-sm);
-    }
-
-    /* ── Scroll indicator arrows ───────────────────────────────────── */
-    .scroll-hint {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 40;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      opacity: 0.6;
-      animation: hint-bob 2s ease-in-out infinite;
-      pointer-events: none;
-    }
-
-    .scroll-hint svg { color: var(--text); }
-
-    .scroll-hint-text {
-      font-size: 0.65rem;
-      text-transform: uppercase;
-      letter-spacing: 0.2em;
-      color: var(--text);
-    }
-
-    @keyframes hint-bob {
-      0%, 100% { transform: translateX(-50%) translateY(0); }
-      50%       { transform: translateX(-50%) translateY(6px); }
-    }
-
-    .scroll-hint.hidden { display: none; }
-
-    /* ── Counter pill ──────────────────────────────────────────────── */
-    .counter-pill {
-      position: fixed;
-      top: 14px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 50;
-      background: rgba(26,18,16,0.75);
-      backdrop-filter: blur(8px);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-pill);
-      padding: 4px 14px;
-      font-size: 0.72rem;
-      color: var(--muted);
-      font-weight: 600;
-      pointer-events: none;
-    }
-
-    /* ── Loading / empty states ────────────────────────────────────── */
-    .scroll-loading {
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      color: var(--muted);
-    }
-
-    .scroll-spinner {
-      width: 32px;
-      height: 32px;
-      border: 2px solid rgba(255,255,255,0.1);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .scroll-empty {
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      text-align: center;
-      padding: 40px;
-    }
-
-    .scroll-empty-icon { font-size: 3rem; opacity: 0.4; }
-
-    .scroll-empty h2 {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.4rem;
-      color: var(--text);
-    }
-
-    .scroll-empty p { font-size: 0.9rem; color: var(--muted); max-width: 300px; }
-
-    /* ── Now playing indicator ─────────────────────────────────────── */
-    .now-playing-bar {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.68rem;
-      color: var(--spotify);
-      font-weight: 600;
-    }
-
-    .np-dots {
-      display: flex;
-      gap: 2px;
-      align-items: flex-end;
-    }
-
-    .np-dot {
-      width: 3px;
-      border-radius: 2px;
-      background: var(--spotify);
-      animation: np-bounce 0.9s ease-in-out infinite;
-    }
-
+    /* now playing */
+    .now-playing-bar { display: flex; align-items: center; gap: 6px; font-size: 0.68rem; color: var(--spotify); font-weight: 600; }
+    .np-dots { display: flex; gap: 2px; align-items: flex-end; }
+    .np-dot { width: 3px; border-radius: 2px; background: var(--spotify); animation: np-bounce 0.9s ease-in-out infinite; }
     .np-dot:nth-child(1) { height: 6px; animation-delay: 0s; }
     .np-dot:nth-child(2) { height: 10px; animation-delay: 0.15s; }
     .np-dot:nth-child(3) { height: 7px; animation-delay: 0.3s; }
     .np-dot:nth-child(4) { height: 12px; animation-delay: 0.45s; }
+    @keyframes np-bounce { 0%,100% { transform: scaleY(0.6); } 50% { transform: scaleY(1); } }
 
-    @keyframes np-bounce {
-      0%, 100% { transform: scaleY(0.6); }
-      50%       { transform: scaleY(1); }
+    /* ── Scroll hint ───────────────────────────────────────────────── */
+    .scroll-hint {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      z-index: 40; display: flex; flex-direction: column; align-items: center; gap: 4px;
+      opacity: 0.6; animation: hint-bob 2s ease-in-out infinite; pointer-events: none;
+    }
+    .scroll-hint svg { color: var(--text); }
+    .scroll-hint-text { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.2em; color: var(--text); }
+    @keyframes hint-bob { 0%,100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(6px); } }
+    .scroll-hint.hidden { display: none; }
+
+    /* ── Loading / empty ───────────────────────────────────────────── */
+    .scroll-loading { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; color: var(--muted); }
+    .scroll-spinner { width: 32px; height: 32px; border: 2px solid rgba(255,255,255,0.1); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .scroll-empty { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; text-align: center; padding: 40px; }
+    .scroll-empty-icon { font-size: 3rem; opacity: 0.4; }
+    .scroll-empty h2 { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--text); }
+    .scroll-empty p { font-size: 0.9rem; color: var(--muted); max-width: 300px; }
+
+    /* ── 3x3 expand overlay ────────────────────────────────────────── */
+    .expand-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(12,8,7,0.97); backdrop-filter: blur(10px);
+      z-index: 200; flex-direction: column; align-items: center;
+      justify-content: center; padding: 20px; gap: 14px;
+    }
+    .expand-overlay.open { display: flex; }
+
+    .expand-header {
+      display: flex; align-items: center; justify-content: space-between;
+      width: 100%; max-width: 460px;
+    }
+    .expand-board-name { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; color: #f5ede8; }
+    .expand-close {
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 50%; width: 32px; height: 32px; display: flex;
+      align-items: center; justify-content: center; color: #f5ede8; font-size: 0.9rem; cursor: pointer;
+    }
+
+    /* masonry inside expand overlay */
+    .expand-masonry {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3px;
+      width: 100%;
+      max-width: 460px;
+      max-height: calc(100vh - 120px);
+      overflow-y: auto;
+      border-radius: var(--radius-md);
+      background: #111;
+      padding: 3px;
+    }
+
+    .expand-masonry::-webkit-scrollbar { display: none; }
+    .expand-masonry { scrollbar-width: none; }
+
+    .expand-masonry-pin {
+      margin: 0;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .expand-masonry-pin img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      aspect-ratio: 1;   /* square pins in grid mode */
+    }
+
+    .expand-analytics-pin {
+      border-radius: 6px;
+      background: rgba(26,18,16,0.95);
+      border: 1px solid rgba(248,131,120,0.2);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      justify-content: space-between;
+      min-height: 180px;
+    }
+
+    /* analytics pin inside expand overlay masonry */
+    .expand-analytics-pin {
+      break-inside: avoid;
+      margin-bottom: 3px;
+      border-radius: 6px;
+      background: rgba(26,18,16,0.95);
+      border: 1px solid rgba(248,131,120,0.2);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;          /* was 6px — more breathing room */
+      justify-content: space-between;
+      min-height: 180px;  /* forces it to a comparable pin height */
+    }
+
+    .exp-analytics-label {
+      font-size: 0.58rem;   /* was 0.52 */
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: rgba(245,237,232,0.5);
+      font-weight: 700;
+    }
+
+    /* fixed-width label so bars always align */
+    .exp-analytics-bar-row { display: flex; align-items: center; gap: 5px; }
+
+    .exp-analytics-bar-name {
+      font-size: 0.6rem;    /* was 0.5 */
+      font-weight: 600;
+      color: rgba(245,237,232,0.6);
+      text-transform: capitalize;
+      width: 64px;
+      flex-shrink: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .exp-analytics-bar-track { flex: 1; height: 3px; background: rgba(255,255,255,0.1); border-radius: 999px; overflow: hidden; }
+    .exp-analytics-bar-fill { height: 100%; border-radius: 999px; background: #F88378; }
+
+    .exp-analytics-divider { height: 1px; background: rgba(255,255,255,0.1); }
+
+    .exp-analytics-song-row { display: flex; align-items: center; gap: 4px; }
+    .exp-analytics-song-dot { width: 3px; height: 3px; border-radius: 50%; background: #F88378; flex-shrink: 0; }
+    .exp-analytics-song-name {
+      font-size: 0.6rem;    /* was 0.5 */
+      font-weight: 700;
+      color: rgba(245,237,232,0.85);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   </style>
 </head>
 <body>
 
-  <!-- Top bar -->
   <div class="top-bar">
     <a class="top-bar-brand" href="index.html">PinClip</a>
     <div class="top-bar-actions">
@@ -475,19 +452,15 @@
     </div>
   </div>
 
-  <!-- Counter pill -->
   <div class="counter-pill" id="counter-pill">— / —</div>
 
-  <!-- Scroll feed -->
   <div class="scroll-feed" id="scroll-feed">
-    <!-- Loading state -->
     <div class="scroll-loading" id="scroll-loading">
       <div class="scroll-spinner"></div>
       <p style="font-size:0.85rem;">Loading boards…</p>
     </div>
   </div>
 
-  <!-- Scroll hint (hidden after first scroll) -->
   <div class="scroll-hint" id="scroll-hint">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M12 5v14M5 12l7 7 7-7"/>
@@ -495,23 +468,35 @@
     <span class="scroll-hint-text">Scroll</span>
   </div>
 
+  <!-- 3x3 expand overlay -->
+  <div class="expand-overlay" id="expand-overlay">
+    <div class="expand-header">
+      <span class="expand-board-name" id="expand-board-name"></span>
+      <button class="expand-close" id="expand-close">✕</button>
+    </div>
+    <div class="expand-masonry" id="expand-masonry"></div>
+  </div>
+
   <script>
     const FLASK_URL = "http://localhost:5000";
 
     let cards        = [];
     let currentIdx   = 0;
-    let activeEmbed  = null;   // track which card currently has embed injected
-    let userGestured = false;  // browser autoplay gate
+    let activeEmbed  = null;
+    let userGestured = false;
 
-    const feed        = document.getElementById("scroll-feed");
-    const loading     = document.getElementById("scroll-loading");
-    const counterPill = document.getElementById("counter-pill");
-    const scrollHint  = document.getElementById("scroll-hint");
+    const feed          = document.getElementById("scroll-feed");
+    const loading       = document.getElementById("scroll-loading");
+    const counterPill   = document.getElementById("counter-pill");
+    const scrollHint    = document.getElementById("scroll-hint");
+    const expandOverlay = document.getElementById("expand-overlay");
+    const expandGrid    = document.getElementById("expand-masonry");
+    const expandName    = document.getElementById("expand-board-name");
+    const expandClose   = document.getElementById("expand-close");
 
-    // ── Fetch all cards ────────────────────────────────────────────
+    // ── Fetch ──────────────────────────────────────────────────────
     async function fetchAll() {
       try {
-        // fetch up to 100 cards (paginate if you have more)
         const resp = await fetch(`${FLASK_URL}/explore/feed?limit=100&offset=0`);
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const data = await resp.json();
@@ -522,56 +507,135 @@
       }
     }
 
-    // ── Build one full-screen card ────────────────────────────────
+    // ── Analytics pin for expand overlay ──────────────────────────
+    function buildExpandAnalytics(card) {
+      const tile = document.createElement("div");
+      tile.className = "expand-analytics-pin";
+
+      let html = `<div class="exp-analytics-label">Board Mood</div>`;
+
+      (card.board_moods ?? []).forEach(m => {
+        html += `
+          <div class="exp-analytics-bar-row">
+            <span class="exp-analytics-bar-name">${esc(m.label)}</span>
+            <div class="exp-analytics-bar-track">
+              <div class="exp-analytics-bar-fill" style="width:${Math.round(m.score*100)}%"></div>
+            </div>
+          </div>`;
+      });
+
+      if ((card.board_moods ?? []).length && (card.tracks ?? []).length) {
+        html += `<div class="exp-analytics-divider"></div>`;
+      }
+
+      (card.tracks ?? []).slice(0, 3).forEach(t => {
+        html += `
+          <div class="exp-analytics-song-row">
+            <div class="exp-analytics-song-dot"></div>
+            <span class="exp-analytics-song-name">${esc(t.name)}</span>
+          </div>`;
+      });
+
+      tile.innerHTML = html;
+      return tile;
+    }
+
+    // ── Expand overlay open/close ──────────────────────────────────
+    function openExpand(card) {
+      expandName.textContent = card.board_name ?? "";
+      expandGrid.innerHTML   = "";
+
+      (card.pin_images ?? []).forEach((url, i) => {
+        const pin = document.createElement("div");
+        pin.className = "expand-masonry-pin";
+        const img = document.createElement("img");
+        img.src     = url;
+        img.alt     = "";
+        img.loading = i < 3 ? "eager" : "lazy";
+        pin.appendChild(img);
+        expandGrid.appendChild(pin);
+      });
+
+      expandGrid.appendChild(buildExpandAnalytics(card));
+
+      expandOverlay.classList.add("open");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeExpand() {
+      expandOverlay.classList.remove("open");
+      document.body.style.overflow = "";
+    }
+
+    expandClose.addEventListener("click", closeExpand);
+    expandOverlay.addEventListener("click", e => { if (e.target === expandOverlay) closeExpand(); });
+
+    // ── Build one scroll card ─────────────────────────────────────
     function buildScrollCard(card, idx) {
       const el = document.createElement("div");
-      el.className    = "scroll-card";
-      el.dataset.idx  = idx;
-      el.dataset.pid  = card.playlist_id ?? "";
+      el.className   = "scroll-card";
+      el.dataset.idx = idx;
+      el.dataset.pid = card.playlist_id ?? "";
 
-      // blurred bg — use first pin image
+      // blurred bg
       const bgUrl = card.pin_images?.[0] ?? "";
       const bg = document.createElement("div");
       bg.className = "sc-bg";
       if (bgUrl) bg.style.backgroundImage = `url('${bgUrl}')`;
       el.appendChild(bg);
 
-      // foreground
       const content = document.createElement("div");
       content.className = "sc-content";
 
-      // collage area
-      const collageArea = document.createElement("div");
-      collageArea.className = "sc-collage-area";
+      // ── collage fills card, edge-to-edge ─────────────────────────
+      const collageWrap = document.createElement("div");
+      collageWrap.className = "sc-collage-wrap";
 
-      const collageInner = document.createElement("div");
-      collageInner.className = "sc-collage-inner";
+      const masonry = document.createElement("div");
+      masonry.className = "sc-masonry";
 
-      const mosaic = document.createElement("div");
-      mosaic.className = "sc-mosaic";
-
-      const heights = [180, 240, 200, 220, 160, 210];
-      (card.pin_images ?? []).slice(0, 6).forEach((url, i) => {
+      const images = card.pin_images ?? [];
+      images.forEach((url, i) => {
         const pin = document.createElement("div");
-        pin.className = "sc-mosaic-pin";
-        pin.style.height = heights[i % heights.length] + "px";
+        pin.className = "sc-masonry-pin";
         const img = document.createElement("img");
         img.src     = url;
         img.alt     = "";
         img.loading = i === 0 ? "eager" : "lazy";
         pin.appendChild(img);
-        mosaic.appendChild(pin);
+        masonry.appendChild(pin);
       });
 
-      collageInner.appendChild(mosaic);
-      collageArea.appendChild(collageInner);
-      content.appendChild(collageArea);
+      collageWrap.appendChild(masonry);
 
-      // info panel
+      // fade gradient handled by ::after on collageWrap
+
+      // tap hint (bottom-left)
+      const hint = document.createElement("div");
+      hint.className   = "sc-tap-hint";
+      hint.textContent = "Tap to expand";
+      collageWrap.appendChild(hint);
+
+      // +N more pill if many images
+      if (images.length > 4) {
+        const more = document.createElement("div");
+        more.className   = "sc-collage-more";
+        more.textContent = `+${images.length - 4} more`;
+        collageWrap.appendChild(more);
+      }
+
+      // tap collage → open expand overlay
+      collageWrap.addEventListener("click", e => {
+        e.stopPropagation();
+        openExpand(card);
+      });
+
+      content.appendChild(collageWrap);
+
+      // ── info panel ──────────────────────────────────────────────
       const info = document.createElement("div");
       info.className = "sc-info";
 
-      // header row
       const headerRow = document.createElement("div");
       headerRow.className = "sc-header-row";
 
@@ -580,8 +644,8 @@
       boardName.textContent = card.board_name ?? "Board";
 
       const moodBadge = document.createElement("span");
-      moodBadge.className   = "sc-mood-badge";
-      moodBadge.textContent = card.mood ?? "";
+      moodBadge.className     = "sc-mood-badge";
+      moodBadge.textContent   = card.mood ?? "";
       moodBadge.style.display = card.mood ? "inline-block" : "none";
 
       headerRow.appendChild(boardName);
@@ -592,25 +656,20 @@
       if (card.tracks?.length) {
         const tracksRow = document.createElement("div");
         tracksRow.className = "sc-tracks";
-
         card.tracks.slice(0, 4).forEach(track => {
           const pill = document.createElement("div");
           pill.className = "sc-track-pill";
-
           const thumb = track.thumbnail
             ? `<img src="${esc(track.thumbnail)}" alt="" />`
             : `<div class="sc-track-pill-placeholder">♪</div>`;
-
           pill.innerHTML = `
             ${thumb}
             <div>
               <div class="sc-track-pill-name">${esc(track.name)}</div>
               <div class="sc-track-pill-artist">${esc(track.artist)}</div>
-            </div>
-          `;
+            </div>`;
           tracksRow.appendChild(pill);
         });
-
         info.appendChild(tracksRow);
       }
 
@@ -619,43 +678,31 @@
       actionRow.className = "sc-action-row";
 
       if (card.playlist_id) {
-        // now-playing indicator (shown when embed is active)
         const nowPlaying = document.createElement("div");
-        nowPlaying.className   = "now-playing-bar";
-        nowPlaying.id          = `np-${idx}`;
+        nowPlaying.className     = "now-playing-bar";
+        nowPlaying.id            = `np-${idx}`;
         nowPlaying.style.display = "none";
-        nowPlaying.innerHTML   = `
-          <div class="np-dots">
-            <div class="np-dot"></div>
-            <div class="np-dot"></div>
-            <div class="np-dot"></div>
-            <div class="np-dot"></div>
-          </div>
-          Now playing
-        `;
+        nowPlaying.innerHTML     = `<div class="np-dots"><div class="np-dot"></div><div class="np-dot"></div><div class="np-dot"></div><div class="np-dot"></div></div>Now playing`;
 
         const toggleBtn = document.createElement("button");
-        toggleBtn.className   = "sc-spotify-toggle";
-        toggleBtn.id          = `toggle-${idx}`;
-        toggleBtn.innerHTML   = `
+        toggleBtn.className = "sc-spotify-toggle";
+        toggleBtn.id        = `toggle-${idx}`;
+        toggleBtn.innerHTML = `
           <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
           </svg>
-          Play on Spotify
-        `;
+          Play on Spotify`;
         toggleBtn.addEventListener("click", () => {
           userGestured = true;
           injectEmbed(el, idx, card.playlist_id, true);
         });
 
         const openLink = document.createElement("a");
-        openLink.className  = "sc-open-link";
-        openLink.href       = `https://open.spotify.com/playlist/${card.playlist_id}`;
-        openLink.target     = "_blank";
-        openLink.rel        = "noopener noreferrer";
-        openLink.innerHTML  = `
-          Open ↗
-        `;
+        openLink.className = "sc-open-link";
+        openLink.href      = `https://open.spotify.com/playlist/${card.playlist_id}`;
+        openLink.target    = "_blank";
+        openLink.rel       = "noopener noreferrer";
+        openLink.textContent = "Open ↗";
 
         actionRow.appendChild(nowPlaying);
         actionRow.appendChild(toggleBtn);
@@ -664,7 +711,6 @@
 
       info.appendChild(actionRow);
 
-      // embed container (hidden until triggered)
       const embedWrap = document.createElement("div");
       embedWrap.className = "sc-embed-wrap";
       embedWrap.id        = `embed-${idx}`;
@@ -673,36 +719,28 @@
       content.appendChild(info);
       el.appendChild(content);
 
+      
+
       return el;
     }
 
-    // ── Inject / remove Spotify embed ─────────────────────────────
+    // ── Spotify embed inject/clear ─────────────────────────────────
     function injectEmbed(cardEl, idx, playlistId, forceShow = false) {
-      // remove embed from previous card
-      if (activeEmbed !== null && activeEmbed !== idx) {
-        clearEmbed(activeEmbed);
-      }
-
-      const embedWrap = document.getElementById(`embed-${idx}`);
+      if (activeEmbed !== null && activeEmbed !== idx) clearEmbed(activeEmbed);
+      const embedWrap  = document.getElementById(`embed-${idx}`);
       const nowPlaying = document.getElementById(`np-${idx}`);
       const toggleBtn  = document.getElementById(`toggle-${idx}`);
-
       if (!embedWrap || !playlistId) return;
-
-      // already injected
       if (embedWrap.classList.contains("visible") && !forceShow) return;
-
       embedWrap.innerHTML = `
         <iframe
           src="https://open.spotify.com/embed/playlist/${playlistId}?autoplay=1&theme=0"
           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
           loading="lazy">
-        </iframe>
-      `;
+        </iframe>`;
       embedWrap.classList.add("visible");
       if (nowPlaying) nowPlaying.style.display = "flex";
       if (toggleBtn)  toggleBtn.style.display  = "none";
-
       activeEmbed = idx;
     }
 
@@ -710,46 +748,33 @@
       const embedWrap  = document.getElementById(`embed-${idx}`);
       const nowPlaying = document.getElementById(`np-${idx}`);
       const toggleBtn  = document.getElementById(`toggle-${idx}`);
-
-      if (embedWrap) {
-        embedWrap.innerHTML = "";
-        embedWrap.classList.remove("visible");
-      }
+      if (embedWrap)  { embedWrap.innerHTML = ""; embedWrap.classList.remove("visible"); }
       if (nowPlaying) nowPlaying.style.display = "none";
       if (toggleBtn)  toggleBtn.style.display  = "flex";
     }
 
-    // ── Intersection Observer — autoplay on scroll ─────────────────
+    // ── Intersection Observer ─────────────────────────────────────
     function setupObserver() {
       const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
           const idx = parseInt(entry.target.dataset.idx);
           const pid = entry.target.dataset.pid;
-
           if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
-            // update counter
             currentIdx = idx;
             counterPill.textContent = `${idx + 1} / ${cards.length}`;
-
-            // autoplay if user has already gestured once
-            if (userGestured && pid) {
-              injectEmbed(entry.target, idx, pid);
-            }
+            if (userGestured && pid) injectEmbed(entry.target, idx, pid);
           } else if (!entry.isIntersecting && idx === activeEmbed) {
-            // card left viewport — clear embed
             clearEmbed(idx);
           }
         });
-      }, {
-        threshold: [0.6],
-        root: feed
-      });
+      }, { threshold: [0.6], root: feed });
 
-      feed.querySelectorAll(".scroll-card").forEach(card => observer.observe(card));
+      feed.querySelectorAll(".scroll-card").forEach(c => observer.observe(c));
     }
 
-    // ── Keyboard nav ───────────────────────────────────────────────
+    // keyboard nav
     document.addEventListener("keydown", e => {
+      if (e.key === "Escape") { closeExpand(); return; }
       if (e.key === "ArrowDown" || e.key === "ArrowRight") {
         e.preventDefault();
         const next = feed.querySelector(`.scroll-card[data-idx="${currentIdx + 1}"]`);
@@ -762,51 +787,34 @@
       }
     });
 
-    // Hide scroll hint after first scroll
     feed.addEventListener("scroll", () => {
       scrollHint.classList.add("hidden");
       userGestured = true;
     }, { once: true });
 
-    // ── Render all cards ──────────────────────────────────────────
+    // ── Render ────────────────────────────────────────────────────
     function renderCards(data) {
       feed.innerHTML = "";
-
       if (!data.length) {
         feed.innerHTML = `
           <div class="scroll-empty">
             <div class="scroll-empty-icon">🎵</div>
             <h2>Nothing here yet</h2>
             <p>Share a playlist card from a board to see it here.</p>
-            <a href="index.html" style="
-              margin-top:16px; display:inline-flex; align-items:center; gap:6px;
-              padding:10px 20px; border-radius:999px;
-              background:rgba(248,131,120,0.15); border:1px solid rgba(248,131,120,0.4);
-              color:#F88378; font-size:0.82rem; font-weight:700; text-decoration:none;">
+            <a href="index.html" style="margin-top:16px;display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:999px;background:rgba(248,131,120,0.15);border:1px solid rgba(248,131,120,0.4);color:#F88378;font-size:0.82rem;font-weight:700;text-decoration:none;">
               Go to my boards →
             </a>
           </div>`;
         return;
       }
-
-      data.forEach((card, i) => {
-        feed.appendChild(buildScrollCard(card, i));
-      });
-
-      // init counter
+      data.forEach((card, i) => feed.appendChild(buildScrollCard(card, i)));
       counterPill.textContent = `1 / ${data.length}`;
-
       setupObserver();
     }
 
     // ── Escape helper ─────────────────────────────────────────────
     function esc(str) {
-      return String(str ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
+      return String(str ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
     }
 
     // ── Boot ──────────────────────────────────────────────────────

@@ -25,6 +25,7 @@ def init_db():
             pin_images  TEXT    NOT NULL,   -- JSON array of up to 4 image URLs
             tracks      TEXT    NOT NULL,   -- JSON array of track objects
             playlist_id TEXT,              -- Spotify playlist ID (optional)
+            board_moods TEXT,              -- JSON array of {label, score} top 3 moods
             created_at  TEXT    NOT NULL
         )
     """)
@@ -43,7 +44,8 @@ def get_conn():
 # ─── Write ────────────────────────────────────────────────────────────────────
 
 def save_card(board_name: str, mood: str, pin_images: list,
-              tracks: list, playlist_id: str = None) -> int:
+              tracks: list, playlist_id: str = None,
+              board_moods: list = None) -> int:
     """
     Save a completed playlist to the explore feed.
     pin_images: list of up to 4 image URLs
@@ -54,14 +56,15 @@ def save_card(board_name: str, mood: str, pin_images: list,
     c    = conn.cursor()
 
     c.execute("""
-        INSERT INTO explore_cards (board_name, mood, pin_images, tracks, playlist_id, created_at)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO explore_cards (board_name, mood, pin_images, tracks, playlist_id, board_moods, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
     """, (
         board_name,
         mood,
-        json.dumps(pin_images[:4]),   # cap at 4 pin images
+        json.dumps(pin_images[:12]),
         json.dumps(tracks),
         playlist_id,
+        json.dumps(board_moods or []),
         datetime.utcnow().isoformat()
     ))
 
@@ -98,6 +101,7 @@ def get_feed(limit: int = 20, offset: int = 0) -> list[dict]:
             "pin_images":  json.loads(row["pin_images"]),
             "tracks":      json.loads(row["tracks"]),
             "playlist_id": row["playlist_id"],
+            "board_moods": json.loads(row["board_moods"] or "[]"),
             "created_at":  row["created_at"],
         })
     return result
