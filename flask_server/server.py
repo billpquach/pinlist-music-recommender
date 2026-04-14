@@ -8,6 +8,8 @@ from pinclip import run_pipeline
 import base64
 import json, base64 as b64
 from db import init_db, save_card, get_feed
+from PIL import Image
+from io import BytesIO
 
 load_dotenv()
 
@@ -315,6 +317,56 @@ def create_spotify_playlist():
         "playlist_id": playlist_id,
         "embed_url":   f"https://open.spotify.com/embed/playlist/{playlist_id}"
     })
+
+# ─── Outfit Analysis (no auth required) ───────────────────────────────────────
+
+@app.route("/analyze-outfit", methods=["POST"])
+def analyze_outfit():
+    image_data = request.json.get("image_data", [])
+    if not image_data:
+        return jsonify({"error": "No images provided"}), 400
+
+    # decode base64 strings → PIL images
+    images = []
+    for b64_str in image_data:
+        try:
+            # strip data URL prefix if present
+            if "," in b64_str:
+                b64_str = b64_str.split(",", 1)[1]
+            img_bytes = base64.b64decode(b64_str)
+            img       = Image.open(BytesIO(img_bytes)).convert("RGB")
+            images.append(img)
+        except Exception as e:
+            print(f"Image decode error: {e}")
+
+    if not images:
+        return jsonify({"error": "No valid images could be decoded"}), 400
+
+    try:
+        from pinclip import run_pipeline_from_images
+        playlist, mood, per_pin_moods, board_moods = run_pipeline_from_images(images)
+
+        playlist_payload = []
+        for entry in playlist:
+            score, name, artist, url, thumbnail, *rest = entry
+            track_id = rest[0] if rest else ""
+            playlist_payload.append({
+                "name":      name,
+                "artist":    artist,
+                "href":      url,
+                "thumbnail": thumbnail,
+                "track_id":  track_id,
+                "score":     round(score, 3)
+            })
+        return jsonify({
+            "mood":          mood,
+            "playlist":      playlist_payload,
+            "per_pin_moods": per_pin_moods,
+            "board_moods":   board_moods,
+        })
+    except Exception as e:
+        print(f"Outfit pipeline error: {e}")
+        return jsonify({"error": str(e)}), 500
 
 # ─── Explore ──────────────────────────────────────────────────────────────────
 

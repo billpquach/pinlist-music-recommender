@@ -117,7 +117,6 @@ MOOD_SEEDS = {
     "gym bro":              ["3QFInJAm9eyaho5vBzxInN"],  # ⚠️ borrowed: bright and energetic
     "goth":                 ["5dTHtzHFPyi8TlTtzoz1J9", ""],  # ⚠️ borrowed: gothic
 }
-
 # ─── Pre-cache mood embeddings ────────────────────────────────────────────────
 
 print("Caching mood embeddings...")
@@ -177,6 +176,81 @@ def aggregate_board_probs(image_urls: list[str]) -> list[float]:
 
     n = len(all_probs)
     return [sum(p[i] for p in all_probs) / n for i in range(len(MOOD_LABELS))]
+
+# ─── Pipeline from PIL images (no HTTP fetch) ─────────────────────────────────
+
+def run_pipeline_from_images(images: list) -> tuple:
+    """
+    Same as run_pipeline but accepts PIL Image objects directly.
+    Used by the outfit camera flow — no URL fetching needed.
+    """
+    print(f"\n── Classifying {len(images)} image(s) from upload...")
+
+    all_probs     = []
+    per_pin_moods = []
+
+    for i, image in enumerate(images):
+        try:
+            probs = classify_image(image)
+            all_probs.append(probs)
+
+            indexed  = sorted(enumerate(probs), key=lambda x: x[1], reverse=True)
+            seen     = {}
+            for idx, s in indexed:
+                parent = SUBCATEGORY_MAP.get(MOOD_LABELS[idx], MOOD_LABELS[idx])
+                if parent not in seen:
+                    seen[parent] = s
+                if len(seen) == 3:
+                    break
+            top3_sum = sum(seen.values())
+            per_pin_moods.append({
+                "url":   f"upload_{i}",
+                "moods": [
+                    {"label": p, "score": round(s / top3_sum, 4)}
+                    for p, s in seen.items()
+                ]
+            })
+            print(f"  [{i+1}/{len(images)}] classified")
+        except Exception as e:
+            print(f"  [{i+1}/{len(images)}] skipped — {e}")
+            per_pin_moods.append({"url": f"upload_{i}", "moods": []})
+
+    if not all_probs:
+        raise ValueError("No images could be classified.")
+
+    # board-level aggregate
+    n     = len(all_probs)
+    probs = [sum(p[i] for p in all_probs) / n for i in range(len(MOOD_LABELS))]
+
+    # top 3 deduplicated board moods
+    indexed      = sorted(enumerate(probs), key=lambda x: x[1], reverse=True)
+    seen_parents = {}
+    for idx, s in indexed:
+        parent = SUBCATEGORY_MAP.get(MOOD_LABELS[idx], MOOD_LABELS[idx])
+        if parent not in seen_parents:
+            seen_parents[parent] = s
+        if len(seen_parents) == 3:
+            break
+    top3_sum    = sum(seen_parents.values())
+    board_moods = [
+        {"label": p, "score": round(s / top3_sum, 4)}
+        for p, s in seen_parents.items()
+    ]
+
+    top_mood = list(seen_parents.keys())[0]
+    print(f"\n── Outfit mood fingerprint — top: {top_mood}")
+
+    print("\n── Fetching recommendations...")
+    recs, mood = board_to_recommendations(probs)
+
+    if "content" not in recs:
+        print(f"ReccoBeats error: {recs.get('detail', 'Unknown error')}")
+        return [], "", [], []
+
+    print(f"── Received {len(recs['content'])} candidates, filtering with CLIP...")
+    playlist = filter_to_final_playlist(recs, mood)
+
+    return playlist, mood, per_pin_moods, board_moods
 
 # ─── ReccoBeats ───────────────────────────────────────────────────────────────
 

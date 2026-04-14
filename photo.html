@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PinClip — Find music for your fit</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* ── Page layout ─────────────────────────────────────────────── */
+    .photo-shell {
+      max-width: 640px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xl);
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── Hero ────────────────────────────────────────────────────── */
+    .photo-hero {
+      background: var(--color-surface-soft);
+      border-radius: var(--radius-lg);
+      padding: var(--space-xl) var(--space-xxl);
+      border: 1px solid var(--color-border);
+      box-shadow: var(--shadow-card);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    .photo-hero h1 { font-size: clamp(2rem, 4vw, 2.8rem); margin: 0; }
+    .photo-hero h1 span { color: var(--color-accent); }
+    .photo-hero p { font-size: 1rem; max-width: 440px; }
+
+    /* ── Camera card ─────────────────────────────────────────────── */
+    .camera-card {
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--color-border);
+      box-shadow: var(--shadow-soft);
+      padding: var(--space-xl);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-lg);
+    }
+
+    /* upload zone */
+    .upload-zone {
+      border: 2px dashed var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--space-xxl) var(--space-lg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-md);
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      text-align: center;
+    }
+
+    .upload-zone:hover {
+      border-color: var(--color-accent);
+      background: rgba(248,131,120,0.04);
+    }
+
+    .upload-zone-icon { font-size: 2.5rem; opacity: 0.6; }
+
+    .upload-zone-text {
+      font-size: 0.95rem;
+      color: var(--color-secondary-text);
+      line-height: 1.5;
+    }
+
+    .upload-zone-text strong {
+      color: var(--color-accent);
+      font-weight: 700;
+    }
+
+    .upload-zone-sub {
+      font-size: 0.78rem;
+      color: var(--color-secondary-text);
+      opacity: 0.7;
+    }
+
+    /* hidden file input */
+    #file-input { display: none; }
+
+    /* ── Thumbnail strip ─────────────────────────────────────────── */
+    .thumb-strip {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .thumb-strip-label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--color-secondary-text);
+    }
+
+    .thumb-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .thumb-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      background: var(--color-surface-soft);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      padding: 8px;
+    }
+
+    .thumb-item img {
+      width: 64px;
+      height: 64px;
+      object-fit: cover;
+      border-radius: 10px;
+      flex-shrink: 0;
+    }
+
+    .thumb-item-name {
+      flex: 1;
+      font-size: 0.82rem;
+      color: var(--color-secondary-text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .thumb-remove {
+      background: none;
+      border: none;
+      color: var(--color-secondary-text);
+      font-size: 1.1rem;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      transition: color 0.15s, background 0.15s;
+      flex-shrink: 0;
+    }
+
+    .thumb-remove:hover {
+      color: var(--color-accent);
+      background: rgba(248,131,120,0.1);
+    }
+
+    /* add more button */
+    .add-more-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.82rem;
+      color: var(--color-accent);
+      font-weight: 600;
+      cursor: pointer;
+      background: none;
+      border: 1px dashed var(--color-accent);
+      border-radius: var(--radius-pill);
+      padding: 6px 14px;
+      transition: background 0.15s;
+      align-self: flex-start;
+    }
+
+    .add-more-btn:hover { background: rgba(248,131,120,0.08); }
+
+    /* ── Find button ─────────────────────────────────────────────── */
+    .find-btn-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+
+    #find-btn {
+      width: 100%;
+      justify-content: center;
+      padding: 1rem;
+      font-size: 1rem;
+    }
+
+    #find-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .find-hint {
+      font-size: 0.78rem;
+      color: var(--color-secondary-text);
+      text-align: center;
+    }
+
+    /* ── Results card ────────────────────────────────────────────── */
+    .results-card {
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--color-border);
+      box-shadow: var(--shadow-soft);
+      overflow: hidden;
+      display: none;
+    }
+
+    .results-card.visible { display: block; }
+
+    /* mood header */
+    .results-mood-header {
+      padding: var(--space-lg) var(--space-xl) var(--space-md);
+      border-bottom: 1px solid var(--color-border);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+
+    .results-eyebrow {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.25em;
+      color: var(--color-secondary-text);
+    }
+
+    .results-mood-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      flex-wrap: wrap;
+    }
+
+    .results-mood-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--color-ebony);
+      margin: 0;
+    }
+
+    .mood-badge-pill {
+      font-size: 0.72rem;
+      padding: 3px 12px;
+      border-radius: var(--radius-pill);
+      background: rgba(248,131,120,0.12);
+      border: 1px solid rgba(248,131,120,0.35);
+      color: var(--color-accent);
+      font-weight: 600;
+      text-transform: capitalize;
+    }
+
+    /* mood bars */
+    .mood-bars-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: var(--space-md) var(--space-xl);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .mood-bar-row-result {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+    }
+
+    .mood-bar-label-result {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--color-secondary-text);
+      text-transform: capitalize;
+      min-width: 130px;
+    }
+
+    .mood-bar-track-result {
+      flex: 1;
+      height: 5px;
+      background: var(--color-surface-soft);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid var(--color-border);
+    }
+
+    .mood-bar-fill-result {
+      height: 100%;
+      border-radius: 999px;
+      background: var(--color-accent);
+      transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* track list */
+    .results-tracks-header {
+      padding: var(--space-md) var(--space-xl) var(--space-sm);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      color: var(--color-secondary-text);
+    }
+
+    .results-track-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .results-track {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: 10px var(--space-xl);
+      text-decoration: none;
+      color: var(--color-ebony);
+      border-bottom: 1px solid rgba(233,220,211,0.5);
+      transition: background 0.15s;
+    }
+
+    .results-track:last-child { border-bottom: none; }
+    .results-track:hover { background: var(--color-surface-soft); }
+
+    .results-track-num {
+      font-family: 'Playfair Display', serif;
+      color: var(--color-accent);
+      min-width: 22px;
+      font-size: 0.9rem;
+    }
+
+    .results-track-thumb {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+
+    .results-track-thumb-placeholder {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: var(--color-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 1rem;
+    }
+
+    .results-track-info { flex: 1; min-width: 0; }
+    .results-track-name { font-weight: 600; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .results-track-artist { font-size: 0.78rem; color: var(--color-secondary-text); }
+    .results-track-open { font-size: 0.78rem; color: var(--color-accent); flex-shrink: 0; }
+
+    /* ── Spotify section ─────────────────────────────────────────── */
+    .spotify-section {
+      padding: var(--space-lg) var(--space-xl);
+      border-top: 1px solid var(--color-border);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+
+    .spotify-connect-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      background: #1DB954;
+      color: #000;
+      border: none;
+      border-radius: var(--radius-pill);
+      font-family: 'Manrope', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      align-self: flex-start;
+    }
+
+    .spotify-connect-btn:hover { opacity: 0.88; }
+    .spotify-connect-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .spotify-status {
+      font-size: 0.82rem;
+      color: var(--color-secondary-text);
+    }
+
+    .spotify-status.connected { color: #1DB954; font-weight: 600; }
+
+    #spotify-embed-wrap { border-radius: var(--radius-md); overflow: hidden; }
+    #spotify-embed-wrap iframe { width: 100%; border: none; border-radius: var(--radius-md); }
+
+    /* ── Loading overlay ─────────────────────────────────────────── */
+    .loading-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(45,26,23,0.65);
+      backdrop-filter: blur(6px);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: var(--space-lg);
+    }
+
+    .loading-overlay.visible { display: flex; }
+
+    .loading-card {
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--color-border);
+      padding: var(--space-xxl) var(--space-xl);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-lg);
+      max-width: 320px;
+      width: 90%;
+      text-align: center;
+    }
+
+    .loading-spinner-lg {
+      width: 48px;
+      height: 48px;
+      border: 3px solid var(--color-border);
+      border-top-color: var(--color-accent);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem;
+      color: var(--color-ebony);
+      margin: 0;
+    }
+
+    .loading-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .loading-step {
+      font-size: 0.82rem;
+      color: var(--color-secondary-text);
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      background: var(--color-surface-soft);
+      transition: color 0.3s, background 0.3s;
+    }
+
+    .loading-step.active {
+      color: var(--color-accent);
+      background: rgba(248,131,120,0.1);
+      font-weight: 600;
+    }
+
+    .loading-step.done {
+      color: var(--color-accent-2);
+    }
+
+    @media (max-width: 680px) {
+      .photo-hero { padding: var(--space-xl) var(--space-lg); }
+      .camera-card { padding: var(--space-lg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-shell">
+    <div class="ambient-grid"></div>
+    <main class="photo-shell">
+
+      <!-- ── Hero ────────────────────────────────────────────────── -->
+      <div class="photo-hero">
+        <p class="eyebrow">outfit → playlist</p>
+        <h1>Find music for<br><span>your fit</span></h1>
+        <p>Take a photo of your outfit — our AI reads the vibe and builds a playlist that matches.</p>
+        <a class="back-link" href="index.html" style="margin-top:4px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 5l-7 7 7 7"/>
+          </svg>
+          Back home
+        </a>
+      </div>
+
+      <!-- ── Camera card ─────────────────────────────────────────── -->
+      <div class="camera-card">
+
+        <!-- upload zone — shown when no photos yet -->
+        <div class="upload-zone" id="upload-zone">
+          <div class="upload-zone-icon">📸</div>
+          <div class="upload-zone-text">
+            <strong>Tap to take a photo</strong> or upload from your gallery
+          </div>
+          <div class="upload-zone-sub">Up to 5 photos · JPG, PNG, HEIC</div>
+        </div>
+
+        <!-- hidden file input -->
+        <input
+          type="file"
+          id="file-input"
+          accept="image/*"
+          capture="environment"
+          multiple
+        />
+
+        <!-- thumbnail strip — shown once photos are added -->
+        <div class="thumb-strip" id="thumb-strip" style="display:none;">
+          <span class="thumb-strip-label">Your photos <span id="photo-count" style="color:var(--color-accent);">0 / 5</span></span>
+          <div class="thumb-list" id="thumb-list"></div>
+          <button class="add-more-btn" id="add-more-btn" style="display:none;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+            Add another photo
+          </button>
+        </div>
+
+        <!-- find button -->
+        <div class="find-btn-wrap">
+          <button class="btn-solid" id="find-btn" disabled>
+            Find my playlist
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+          <p class="find-hint" id="find-hint">Add at least one photo to continue</p>
+        </div>
+
+      </div>
+
+      <!-- ── Results ─────────────────────────────────────────────── -->
+      <div class="results-card" id="results-card">
+
+        <!-- mood header -->
+        <div class="results-mood-header">
+          <span class="results-eyebrow">Your fit sounds like</span>
+          <div class="results-mood-row">
+            <h2 class="results-mood-title" id="results-mood-title">—</h2>
+          </div>
+          <div id="results-mood-badges" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+        </div>
+
+        <!-- mood bars -->
+        <div class="mood-bars-wrap" id="mood-bars-wrap"></div>
+
+        <!-- track list -->
+        <div class="results-tracks-header">Playlist</div>
+        <div class="results-track-list" id="results-track-list"></div>
+
+        <!-- spotify -->
+        <div class="spotify-section" id="spotify-section">
+          <p class="spotify-status" id="spotify-status">Connect Spotify to save this playlist</p>
+          <button class="spotify-connect-btn" id="spotify-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+            </svg>
+            <span id="spotify-btn-label">Connect Spotify</span>
+          </button>
+          <div id="spotify-embed-wrap"></div>
+        </div>
+
+      </div>
+
+    </main>
+
+    <footer class="footer">
+      <span>© 2026 PinClip by Bill Quach</span>
+      <a href="privacy.html">Privacy policy</a>
+    </footer>
+  </div>
+
+  <!-- ── Loading overlay ─────────────────────────────────────────── -->
+  <div class="loading-overlay" id="loading-overlay">
+    <div class="loading-card">
+      <div class="loading-spinner-lg"></div>
+      <h3 class="loading-title">Reading your fit…</h3>
+      <div class="loading-steps">
+        <div class="loading-step" id="step-1">📸 Processing photos</div>
+        <div class="loading-step" id="step-2">🎨 Classifying aesthetic</div>
+        <div class="loading-step" id="step-3">🎵 Finding matching tracks</div>
+        <div class="loading-step" id="step-4">✨ Ranking by vibe</div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    const FLASK_URL = "http://localhost:5000";
+    const MAX_PHOTOS = 5;
+
+    // ── Session ID for Spotify (no Pinterest auth needed) ──────────
+    let sessionId = sessionStorage.getItem("photo_session_id");
+    if (!sessionId) {
+      sessionId = crypto.randomUUID();
+      sessionStorage.setItem("photo_session_id", sessionId);
+    }
+
+    // ── State ──────────────────────────────────────────────────────
+    let photos         = [];   // {file, dataUrl} objects
+    let currentTracks  = [];
+    let currentMood    = "";
+    let spotifyConnected = false;
+
+    // ── Elements ───────────────────────────────────────────────────
+    const uploadZone       = document.getElementById("upload-zone");
+    const fileInput        = document.getElementById("file-input");
+    const thumbStrip       = document.getElementById("thumb-strip");
+    const thumbList        = document.getElementById("thumb-list");
+    const photoCount       = document.getElementById("photo-count");
+    const addMoreBtn       = document.getElementById("add-more-btn");
+    const findBtn          = document.getElementById("find-btn");
+    const findHint         = document.getElementById("find-hint");
+    const resultsCard      = document.getElementById("results-card");
+    const resultsMoodTitle = document.getElementById("results-mood-title");
+    const resultsMoodBadges= document.getElementById("results-mood-badges");
+    const moodBarsWrap     = document.getElementById("mood-bars-wrap");
+    const trackList        = document.getElementById("results-track-list");
+    const loadingOverlay   = document.getElementById("loading-overlay");
+    const spotifyBtn       = document.getElementById("spotify-btn");
+    const spotifyBtnLabel  = document.getElementById("spotify-btn-label");
+    const spotifyStatus    = document.getElementById("spotify-status");
+    const spotifyEmbedWrap = document.getElementById("spotify-embed-wrap");
+
+    // ── File input triggers ────────────────────────────────────────
+    uploadZone.addEventListener("click", () => fileInput.click());
+    addMoreBtn.addEventListener("click", () => fileInput.click());
+
+    fileInput.addEventListener("change", e => {
+      const files = Array.from(e.target.files ?? []);
+      const slots = MAX_PHOTOS - photos.length;
+      files.slice(0, slots).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = ev => {
+          photos.push({ file, dataUrl: ev.target.result });
+          renderThumbs();
+        };
+        reader.readAsDataURL(file);
+      });
+      // reset so same file can be re-selected
+      fileInput.value = "";
+    });
+
+    // ── Render thumbnails ──────────────────────────────────────────
+    function renderThumbs() {
+      thumbList.innerHTML = "";
+      photos.forEach((p, i) => {
+        const item = document.createElement("div");
+        item.className = "thumb-item";
+        item.innerHTML = `
+          <img src="${p.dataUrl}" alt="Photo ${i + 1}" />
+          <span class="thumb-item-name">Photo ${i + 1}</span>
+          <button class="thumb-remove" data-idx="${i}" title="Remove">✕</button>
+        `;
+        thumbList.appendChild(item);
+      });
+
+      // wire remove buttons
+      thumbList.querySelectorAll(".thumb-remove").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const idx = parseInt(btn.dataset.idx);
+          photos.splice(idx, 1);
+          renderThumbs();
+        });
+      });
+
+      const n = photos.length;
+      photoCount.textContent = `${n} / ${MAX_PHOTOS}`;
+
+      // show/hide UI elements
+      uploadZone.style.display = n === 0 ? "flex" : "none";
+      thumbStrip.style.display = n > 0   ? "flex" : "none";
+      addMoreBtn.style.display = n > 0 && n < MAX_PHOTOS ? "inline-flex" : "none";
+      findBtn.disabled         = n === 0;
+      findHint.textContent     = n === 0
+        ? "Add at least one photo to continue"
+        : `${n} photo${n > 1 ? "s" : ""} ready — tap to find your playlist`;
+    }
+
+    // ── Loading steps animation ────────────────────────────────────
+    let stepTimer = null;
+
+    function startLoadingSteps() {
+      const steps = [
+        document.getElementById("step-1"),
+        document.getElementById("step-2"),
+        document.getElementById("step-3"),
+        document.getElementById("step-4"),
+      ];
+      steps.forEach(s => s.className = "loading-step");
+      let i = 0;
+      function next() {
+        if (i > 0) steps[i - 1].className = "loading-step done";
+        if (i < steps.length) {
+          steps[i].className = "loading-step active";
+          i++;
+          stepTimer = setTimeout(next, 2800);
+        }
+      }
+      next();
+    }
+
+    function stopLoadingSteps() {
+      clearTimeout(stepTimer);
+    }
+
+    // ── Find playlist ──────────────────────────────────────────────
+    findBtn.addEventListener("click", async () => {
+      if (!photos.length) return;
+
+      loadingOverlay.classList.add("visible");
+      startLoadingSteps();
+      findBtn.disabled = true;
+
+      try {
+        // encode all photos as base64 — strip the data URL prefix
+        const image_data = photos.map(p => p.dataUrl);
+
+        const resp = await fetch(`${FLASK_URL}/analyze-outfit`, {
+          method:  "POST",
+          headers: { "Content-Type": "application/json" },
+          body:    JSON.stringify({ image_data })
+        });
+
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const data = await resp.json();
+
+        currentTracks = data.playlist ?? [];
+        currentMood   = data.mood     ?? "";
+
+        renderResults(data);
+
+      } catch (err) {
+        console.error("Outfit pipeline error:", err);
+        alert("Something went wrong — make sure Flask is running and try again.");
+      } finally {
+        stopLoadingSteps();
+        loadingOverlay.classList.remove("visible");
+        findBtn.disabled = photos.length === 0;
+      }
+    });
+
+    // ── Render results ─────────────────────────────────────────────
+    function renderResults(data) {
+      const mood       = data.mood        ?? "";
+      const boardMoods = data.board_moods ?? [];
+      const tracks     = data.playlist    ?? [];
+
+      // mood header
+      resultsMoodTitle.textContent = mood;
+      resultsMoodBadges.innerHTML  = "";
+      boardMoods.slice(1).forEach(m => {
+        const span = document.createElement("span");
+        span.className   = "mood-badge-pill";
+        span.textContent = m.label;
+        resultsMoodBadges.appendChild(span);
+      });
+
+      // mood bars
+      moodBarsWrap.innerHTML = "";
+      boardMoods.forEach(m => {
+        moodBarsWrap.innerHTML += `
+          <div class="mood-bar-row-result">
+            <span class="mood-bar-label-result">${esc(m.label)}</span>
+            <div class="mood-bar-track-result">
+              <div class="mood-bar-fill-result" style="width:${Math.round(m.score * 100)}%"></div>
+            </div>
+          </div>`;
+      });
+
+      // track list
+      trackList.innerHTML = "";
+      tracks.forEach((track, i) => {
+        const a = document.createElement("a");
+        a.className = "results-track";
+        a.href      = track.href ?? "#";
+        a.target    = "_blank";
+        a.rel       = "noopener noreferrer";
+        const thumb = track.thumbnail
+          ? `<img class="results-track-thumb" src="${esc(track.thumbnail)}" alt="${esc(track.name)}" loading="lazy" />`
+          : `<div class="results-track-thumb-placeholder">♪</div>`;
+        a.innerHTML = `
+          <span class="results-track-num">${i + 1}</span>
+          ${thumb}
+          <div class="results-track-info">
+            <div class="results-track-name">${esc(track.name)}</div>
+            <div class="results-track-artist">${esc(track.artist)}</div>
+          </div>
+          <span class="results-track-open">Open ↗</span>
+        `;
+        trackList.appendChild(a);
+      });
+
+      // show results
+      resultsCard.classList.add("visible");
+      resultsCard.scrollIntoView({ behavior: "smooth", block: "start" });
+
+      // update spotify button state
+      updateSpotifyUI();
+    }
+
+    // ── Spotify ────────────────────────────────────────────────────
+    function updateSpotifyUI() {
+      if (spotifyConnected) {
+        spotifyBtnLabel.textContent = "Save to Spotify";
+        spotifyStatus.textContent   = "✓ Spotify connected";
+        spotifyStatus.className     = "spotify-status connected";
+      } else {
+        spotifyBtnLabel.textContent = "Connect Spotify";
+        spotifyStatus.textContent   = "Connect Spotify to save this playlist";
+        spotifyStatus.className     = "spotify-status";
+      }
+    }
+
+    spotifyBtn.addEventListener("click", async () => {
+      if (!spotifyConnected) {
+        const resp = await fetch(`${FLASK_URL}/spotify/auth-url?session_id=${sessionId}`);
+        const data = await resp.json();
+        // open as popup — same pattern as board.html
+        window.open(data.url, "spotify_auth", "width=500,height=700");
+      } else {
+        await saveToSpotify();
+      }
+    });
+
+    // listen for postMessage from spotify-callback.html popup
+    window.addEventListener("message", e => {
+      if (e.data === "spotify_connected") {
+        spotifyConnected = true;
+        updateSpotifyUI();
+      }
+    });
+
+    async function saveToSpotify() {
+      spotifyBtn.disabled         = true;
+      spotifyBtnLabel.textContent = "Creating playlist…";
+
+      try {
+        const resp = await fetch(`${FLASK_URL}/spotify/create-playlist`, {
+          method:  "POST",
+          headers: { "Content-Type": "application/json", "X-Session-ID": sessionId },
+          body:    JSON.stringify({
+            track_ids:  currentTracks.map(t => t.track_id).filter(Boolean),
+            board_name: `My ${currentMood} fit`,
+            mood:       currentMood
+          })
+        });
+
+        const data = await resp.json();
+
+        if (data.needs_auth) {
+          spotifyConnected        = false;
+          spotifyBtn.disabled     = false;
+          spotifyBtnLabel.textContent = "Connect Spotify";
+          updateSpotifyUI();
+          return;
+        }
+
+        if (!resp.ok) throw new Error(data.error || "Failed");
+
+        spotifyBtnLabel.textContent = "✓ Saved!";
+        spotifyStatus.textContent   = "Playlist saved to your Spotify";
+        spotifyStatus.className     = "spotify-status connected";
+
+        spotifyEmbedWrap.innerHTML = `
+          <iframe
+            src="${data.embed_url}"
+            width="100%" height="152"
+            frameborder="0"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            style="border-radius:12px;">
+          </iframe>`;
+
+      } catch (err) {
+        console.error("Spotify save error:", err);
+        spotifyBtn.disabled         = false;
+        spotifyBtnLabel.textContent = "Try again";
+      }
+    }
+
+    // also check if session already has a spotify token
+    (async () => {
+      try {
+        const resp = await fetch(`${FLASK_URL}/spotify/create-playlist`, {
+          method:  "POST",
+          headers: { "Content-Type": "application/json", "X-Session-ID": sessionId },
+          body:    JSON.stringify({ track_ids: [], board_name: "test", mood: "test" })
+        });
+        const data = await resp.json();
+        // if we get needs_auth it means no token — that's fine
+        if (!data.needs_auth && resp.status !== 400) {
+          spotifyConnected = true;
+          updateSpotifyUI();
+        }
+      } catch { /* ignore */ }
+    })();
+    // todo
+
+    // move spotify player to top
+    // reset / make new spotify playlist
+    // check for camera function
+    // share to explore page
+    // ui looks flat, explore page below ?? dynamic element
+    // 
+
+
+    // ── Helper ─────────────────────────────────────────────────────
+    function esc(str) {
+      return String(str ?? "")
+        .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+    }
+  </script>
+</body>
+</html>
+
