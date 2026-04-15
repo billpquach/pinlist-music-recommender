@@ -8,3 +8,4 @@ Pillow>=10.0
 colorthief>=0.2.1
 scikit-learn>=1.4
 numpy>=1.26
+gunicorn>=25.3.0
