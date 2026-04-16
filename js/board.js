@@ -24,7 +24,7 @@ const shareBtnInline     = document.getElementById("share-btn-inline");
 const shareBtnHero       = document.getElementById("share-btn-hero");
 const selectHint         = document.getElementById("select-hint");
 const spotifyEmbed       = document.getElementById("spotify-embed");
-
+const loadingOverlay   = document.getElementById("loading-overlay");
 // modal elements
 const shareModal         = document.getElementById("share-modal");
 const modalClose         = document.getElementById("modal-close");
@@ -162,48 +162,53 @@ function togglePinSelection(item) {
 
 // ─── Find music ───────────────────────────────────────────────────────────────
 findBtn.addEventListener("click", async () => {
-  findBtn.disabled = true;
-  findBtn.innerHTML = `<div class="spinner"></div> Analyzing…`;
-  playlistBody.innerHTML = `
-    <div class="playlist-loading">
-      <div class="spinner"></div>
-      <p>Classifying your pins and finding music…</p>
-    </div>`;
-  playlistMeta.textContent = "Working…";
-  moodBadgeWrap.innerHTML  = "";
-  playlistActionRow.style.display = "none";
+  // Show overlay and reset steps
+  loadingOverlay.classList.add("visible");
+  const steps = [1, 2, 3, 4].map(n => document.getElementById(`step-${n}`));
+  steps.forEach(s => s.classList.remove("active", "done"));
 
   try {
-    const pinResp   = await fetch(`${FLASK_URL}/pins/${boardId}`, {
+    // Step 1: Processing
+    steps[0].classList.add("active");
+    const pinResp = await fetch(`${FLASK_URL}/pins/${boardId}`, {
       headers: { "X-Session-ID": sessionId }
     });
-    const pinData   = await pinResp.json();
+    const pinData = await pinResp.json();
     const imageUrls = (pinData.pins ?? []).map(p => p.image_url).filter(Boolean);
+    steps[0].classList.replace("active", "done");
 
+    // Step 2: Classifying
+    steps[1].classList.add("active");
     const resp = await fetch(`${FLASK_URL}/analyze`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-Session-ID": sessionId },
       body: JSON.stringify({ image_urls: imageUrls })
     });
     if (!resp.ok) throw new Error(`Analyze failed: HTTP ${resp.status}`);
+    const data = await resp.json();
+    steps[1].classList.replace("active", "done");
 
-    const data    = await resp.json();
+    // Step 3 & 4: Finalizing
+    steps[2].classList.add("active");
     currentTracks = data.playlist ?? [];
     currentMood   = data.mood ?? "";
     boardMoods    = data.board_moods ?? [];
-
-    // build pinMoods lookup keyed by image_url
+    
     pinMoods = {};
     (data.per_pin_moods ?? []).forEach(entry => {
       pinMoods[entry.url] = entry.moods;
     });
+    steps[2].classList.replace("active", "done");
 
+    steps[3].classList.add("active");
     renderPlaylist(currentTracks, currentMood, boardMoods);
     enablePinSelection();
 
     selectedTrackIds = currentTracks.slice(0, 4).map((_, i) => i);
     updateShareCard();
+    steps[3].classList.replace("active", "done");
 
+    // UI Updates
     playlistActionRow.style.display = "flex";
     saveSpotifyInline.disabled = false;
     shareBtnInline.classList.add("enabled");
@@ -211,19 +216,12 @@ findBtn.addEventListener("click", async () => {
 
   } catch (err) {
     console.error(err);
-    playlistBody.innerHTML = `
-      <div class="playlist-empty">
-        <div class="empty-icon">⚠️</div>
-        <p>Something went wrong. Please try again.</p>
-      </div>`;
-    playlistMeta.textContent = "Error";
+    alert("Something went wrong during analysis.");
   } finally {
-    findBtn.disabled = false;
-    findBtn.innerHTML = `Find music for this board
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M5 12h14M12 5l7 7-7 7"/>
-      </svg>`;
+    // Hide overlay after a short delay
+    setTimeout(() => {
+      loadingOverlay.classList.remove("visible");
+    }, 500);
   }
 });
 

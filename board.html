@@ -29,7 +29,79 @@
       height: auto;      /* natural image height — portrait images stay portrait */
       width: 100%;
     }
+    /* ── Loading overlay ─────────────────────────────────────────── */
+    .loading-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(45,26,23,0.65);
+      backdrop-filter: blur(6px);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: var(--space-lg);
+    }
 
+    .loading-overlay.visible { display: flex; }
+
+    .loading-card {
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--color-border);
+      padding: var(--space-xxl) var(--space-xl);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-lg);
+      max-width: 320px;
+      width: 90%;
+      text-align: center;
+    }
+
+    .loading-spinner-lg {
+      width: 48px;
+      height: 48px;
+      border: 3px solid var(--color-border);
+      border-top-color: var(--color-accent);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem;
+      color: var(--color-ebony);
+      margin: 0;
+    }
+
+    .loading-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .loading-step {
+      font-size: 0.82rem;
+      color: var(--color-secondary-text);
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      background: var(--color-surface-soft);
+      transition: color 0.3s, background 0.3s;
+    }
+
+    .loading-step.active {
+      color: var(--color-accent);
+      background: rgba(248,131,120,0.1);
+      font-weight: 600;
+    }
+
+    .loading-step.done {
+      color: var(--color-accent-2);
+    }
     /* ── Playlist card action row ──────────────────────────────────── */
     .playlist-action-row {
       display: flex;
@@ -739,7 +811,7 @@
           <div class="section-heading">
             <div>
               <p class="eyebrow">playlist</p>
-              <h2>Your PinClip mix</h2>
+              <h2>Your Pinlist mix</h2>
             </div>
           </div>
           <div class="playlist-card">
@@ -883,6 +955,19 @@
   <div class="screenshot-overlay" id="screenshot-overlay">
     <p class="screenshot-hint">📸 Screenshot now, then tap Close</p>
     <button class="screenshot-close" id="screenshot-close">Close</button>
+  </div>
+  <!-- ── Loading overlay ─────────────────────────────────────────── -->
+  <div class="loading-overlay" id="loading-overlay">
+    <div class="loading-card">
+      <div class="loading-spinner-lg"></div>
+      <h3 class="loading-title">Reading your fit…</h3>
+      <div class="loading-steps">
+        <div class="loading-step" id="step-1">📸 Processing photos</div>
+        <div class="loading-step" id="step-2">🎨 Classifying aesthetic</div>
+        <div class="loading-step" id="step-3">🎵 Finding matching tracks</div>
+        <div class="loading-step" id="step-4">✨ Ranking by vibe</div>
+      </div>
+    </div>
   </div>
   <script type="module" src="js/board.js"></script>
 </body>

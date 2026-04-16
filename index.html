@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PinClip — Your boards, your sound</title>
+  <title>Pinlist — Your boards, your sound</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -286,6 +286,81 @@
         grid-template-columns: 1fr;
       }
     }
+    .explore-carousel-wrap {
+      margin-top: var(--space-lg);
+    }
+
+    .explore-carousel {
+      display: flex;
+      gap: var(--space-md);
+      overflow-x: hidden;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      padding-bottom: 6px;
+    }
+
+    .explore-carousel::-webkit-scrollbar {
+      height: 6px;
+    }
+    .explore-carousel::-webkit-scrollbar-thumb {
+      background: var(--color-border);
+      border-radius: 999px;
+    }
+
+    .feed-card {
+      min-width: 260px;
+      max-width: 280px;
+      flex-shrink: 0;
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--color-border);
+      overflow: hidden;
+      scroll-snap-align: start;
+      cursor: pointer;
+    }
+
+    .feed-card img {
+      width: 100%;
+      display: block;
+    }
+
+    .feed-card-header {
+      padding: 10px;
+      font-weight: 600;
+    }
+
+    .feed-card-footer {
+      padding: 8px 10px;
+      font-size: 0.8rem;
+    }
+    .spotify-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #1db954;
+      color: white;
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .mood-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      padding: 6px 10px;
+    }
+
+    .mood-bars div {
+      width: 6px;
+      background: var(--color-accent);
+      border-radius: 3px;
+      opacity: 0.85;
+    }
+
+
   </style>
 </head>
 <body>
@@ -299,7 +374,7 @@
         <!-- Left: text + CTA -->
         <div class="home-hero-text">
           <p class="eyebrow">visual taste → bespoke playlists</p>
-          <h1>Pin<span>Clip</span></h1>
+          <h1>Pin<span>List</span></h1>
           <p class="hero-subhead">
             We read the colors, textures, and energy of your Pinterest boards
             and translate that vibe into a playlist that sounds like you.
@@ -354,34 +429,16 @@
         </div>
       </section>
       <!-- ── Explore community link ─────────────────────────────────── -->
-      <a href="explore.html" style="
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: var(--space-lg) var(--space-xl);
-        background: var(--color-surface);
-        border-radius: var(--radius-lg);
-        border: 1px solid var(--color-border);
-        box-shadow: var(--shadow-soft);
-        text-decoration: none;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-      " onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 25px 45px rgba(48,31,25,0.18)'"
-        onmouseout="this.style.transform='';this.style.boxShadow=''">
-        <div>
-          <p style="margin:0 0 2px;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.22em;color:var(--color-secondary-text);">Community</p>
-          <p style="margin:0;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--color-ebony);">Explore community boards</p>
-          <p style="margin:4px 0 0;font-size:0.85rem;color:var(--color-secondary-text);">Browse playlists generated from real Pinterest boards.</p>
-        </div>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
-          <path d="M5 12h14M12 5l7 7-7 7"/>
-        </svg>
-      </a>
+      <div class="explore-carousel-wrap">
+        <div class="explore-carousel" id="explore-carousel"></div>
+      </div>
+
       <!-- ── How it works ───────────────────────────────────────────── -->
       <div class="how-strip">
         <div class="how-step">
           <span class="how-step-num">01</span>
           <h4>Connect your Pinterest</h4>
-          <p>Securely link your account — PinClip only reads your boards, never posts.</p>
+          <p>Securely link your account — Pinlist only reads your boards, never posts.</p>
         </div>
         <div class="how-step">
           <span class="how-step-num">02</span>
@@ -397,7 +454,7 @@
 
     </main>
     <footer class="footer">
-      <span>© 2026 PinClip by Bill Quach</span>
+      <span>© 2026 Pinlist by Bill Quach</span>
       <a href="privacy.html">Privacy policy</a>
     </footer>
   </div>
@@ -554,8 +611,131 @@
 
       stack.style.display = "block";
     }
+  
+
+const exploreCarousel = document.getElementById("explore-carousel");
+
+  function esc(str) {
+    return String(str ?? "")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;");
+  }
+
+  async function loadExploreCarousel() {
+    try {
+      const resp = await fetch(`${FLASK_URL}/explore/feed?limit=12`);
+      const data = await resp.json();
+
+      let cards = data.cards ?? [];
+      cards = cards.sort(() => Math.random() - 0.5);
+
+      renderExploreCarousel(cards);
+
+      setTimeout(() => {
+        startDiscreteScroll();
+      }, 100);
+
+    } catch (err) {
+      console.error("Explore carousel error:", err);
+    }
+  }
+
+  function renderExploreCarousel(cards) {
+    exploreCarousel.innerHTML = "";
+
+    cards.forEach(card => {
+      const el = document.createElement("div");
+      el.className = "feed-card";
+
+      // image
+      const img = document.createElement("img");
+      img.src = (card.pin_images ?? [])[0] || "";
+      el.appendChild(img);
+
+      // mood bars (FIXED placement)
+      if (Array.isArray(card.mood_vector)) {
+        const mood = document.createElement("div");
+        mood.className = "mood-bars";
+
+        card.mood_vector.forEach(v => {
+          const bar = document.createElement("div");
+          bar.style.height = `${Math.max(6, v * 40)}px`;
+          mood.appendChild(bar);
+        });
+
+        el.appendChild(mood);
+      }
+
+      // header
+      const header = document.createElement("div");
+      header.className = "feed-card-header";
+      header.textContent = esc(card.board_name);
+      el.appendChild(header);
+
+      // footer
+      const footer = document.createElement("div");
+      footer.className = "feed-card-footer";
+
+      if (card.playlist_id) {
+        const btn = document.createElement("a");
+        btn.href = `https://open.spotify.com/playlist/${card.playlist_id}`;
+        btn.target = "_blank";
+        btn.className = "spotify-btn";
+
+        btn.innerHTML = `
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12
+            12-5.37 12-12S18.63 0 12 0zm5.5 17.3c-.2.3-.6.4-.9.2
+            -2.5-1.5-5.6-1.8-9.3-.9-.3.1-.7-.1-.8-.4-.1-.3.1-.7.4-.8
+            4-.9 7.5-.6 10.3 1.1.3.2.4.6.3.8zm1.2-2.7c-.3.4-.8.6-1.2.3
+            -2.8-1.7-7-2.2-10.3-1.2-.4.1-.9-.1-1-.6-.1-.4.1-.9.6-1
+            3.8-1.1 8.5-.6 11.7 1.4.4.2.5.8.2 1.1zm.1-2.8
+            c-3.3-2-8.8-2.2-12-.9-.5.2-1-.1-1.2-.5-.2-.5.1-1 .5-1.2
+            3.7-1.5 9.9-1.2 13.8 1 .4.2.6.8.3 1.2-.2.4-.8.6-1.4.4z"/>
+          </svg>
+          Open in Spotify
+        `;
+
+        btn.onclick = e => e.stopPropagation();
+        footer.appendChild(btn);
+      }
+
+
+      el.appendChild(footer);
+
+      // click → explore page
+      el.addEventListener("click", () => {
+        window.location.href = "explore.html";
+      });
+
+      exploreCarousel.appendChild(el);
+    });
+  }
+
+
+  function startDiscreteScroll() {
+    let index = 0;
+
+    setInterval(() => {
+      const cards = document.querySelectorAll(".feed-card");
+      if (!cards.length) return;
+
+      index = (index + 1) % cards.length;
+
+      const card = cards[index];
+
+      exploreCarousel.scrollTo({
+        left: card.offsetLeft,
+        behavior: "smooth"
+      });
+
+    }, 3000);
+  }
+
 
     init();
+    loadExploreCarousel();
   </script>
 </body>
 </html>
