@@ -384,10 +384,14 @@ def explore_feed():
 
 @app.route("/explore/save", methods=["POST"])
 def explore_save():
-    session_id   = request.headers.get("X-Session-ID")
-    access_token = token_store.get(session_id)
-    if not access_token:
-        return jsonify({"error": "Not authenticated"}), 401
+    session_id = request.headers.get("X-Session-ID")
+
+    # Allow both Pinterest-authenticated sessions AND anonymous photo sessions.
+    # Pinterest sessions are in token_store; photo sessions are bare UUIDs that
+    # won't be in token_store — that's fine, we just need *some* session ID so
+    # we can identify the submitter. Reject only completely missing session IDs.
+    if not session_id:
+        return jsonify({"error": "Missing session ID"}), 401
 
     body       = request.json or {}
     board_name = body.get("board_name", "").strip()

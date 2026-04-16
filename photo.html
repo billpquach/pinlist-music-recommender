@@ -396,6 +396,391 @@
     #spotify-embed-wrap { border-radius: var(--radius-md); overflow: hidden; }
     #spotify-embed-wrap iframe { width: 100%; border: none; border-radius: var(--radius-md); }
 
+    /* ── Share button in results ─────────────────────────────────── */
+    .results-action-row {
+      display: flex;
+      gap: 8px;
+      padding: var(--space-md) var(--space-xl) 0;
+      flex-wrap: wrap;
+      border-top: 1px solid var(--color-border);
+      padding-top: var(--space-md);
+    }
+
+    #share-btn-photo {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 16px;
+      background: transparent;
+      color: var(--color-secondary-text);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-pill);
+      font-family: 'Manrope', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: not-allowed;
+      opacity: 0.45;
+      transition: opacity 0.2s, color 0.2s, border-color 0.2s;
+    }
+
+    #share-btn-photo.enabled {
+      cursor: pointer;
+      opacity: 1;
+      color: var(--color-accent);
+      border-color: var(--color-accent);
+    }
+
+    /* ── Share modal ─────────────────────────────────────────────── */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(45,26,23,0.6);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-lg);
+    }
+
+    .modal-backdrop.open { display: flex; }
+
+    .modal {
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--color-border);
+      box-shadow: var(--shadow-card);
+      width: 100%;
+      max-width: 820px;
+      max-height: 90vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-lg);
+      padding: var(--space-xl);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .modal-header h2 { margin: 0; font-size: 1.4rem; }
+    .modal-header p  { margin: 4px 0 0; font-size: 0.88rem; color: var(--color-secondary-text); }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.4rem;
+      cursor: pointer;
+      color: var(--color-secondary-text);
+      line-height: 1;
+      padding: 0;
+    }
+
+    .modal-body {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: var(--space-xl);
+      align-items: start;
+    }
+
+    @media (max-width: 680px) {
+      .modal-body { grid-template-columns: 1fr; }
+    }
+
+    /* photo picker */
+    .modal-photo-selector h4 {
+      margin: 0 0 var(--space-md);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--color-secondary-text);
+    }
+
+    .modal-photos-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+      gap: 8px;
+      max-height: 320px;
+      overflow-y: auto;
+    }
+
+    .modal-photo-item {
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+      aspect-ratio: 1;
+      background: var(--color-surface-soft);
+      transition: transform 0.15s;
+    }
+
+    .modal-photo-item img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .modal-photo-item::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border: 2.5px solid transparent;
+      border-radius: var(--radius-sm);
+      transition: border-color 0.15s, background 0.15s;
+      pointer-events: none;
+    }
+
+    .modal-photo-item:hover::after {
+      border-color: var(--color-accent);
+      background: rgba(248,131,120,0.1);
+    }
+
+    .modal-photo-item.selected::after {
+      border-color: var(--color-accent);
+      background: rgba(248,131,120,0.2);
+    }
+
+    .modal-photo-item .photo-num {
+      display: none;
+      position: absolute;
+      top: 4px; right: 4px;
+      width: 20px; height: 20px;
+      background: var(--color-accent);
+      border-radius: 50%;
+      font-size: 10px;
+      font-weight: 700;
+      color: #fff;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+    }
+
+    .modal-photo-item.selected .photo-num { display: flex; }
+
+    /* track swap */
+    .track-swap-list {
+      margin-top: var(--space-md);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .track-swap-list h4 {
+      margin: 0 0 8px;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--color-secondary-text);
+    }
+
+    .swap-track {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--color-border);
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      font-size: 0.82rem;
+    }
+
+    .swap-track.active {
+      border-color: var(--color-accent);
+      background: rgba(248,131,120,0.08);
+    }
+
+    .swap-track img {
+      width: 30px; height: 30px;
+      border-radius: 5px;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+
+    .swap-track-info { flex: 1; min-width: 0; }
+    .swap-track-name   { font-weight: 700; color: var(--color-ebony); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .swap-track-artist { font-size: 0.75rem; color: var(--color-secondary-text); }
+
+    .swap-check {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      border: 1.5px solid var(--color-border);
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px;
+    }
+
+    .swap-track.active .swap-check {
+      background: var(--color-accent);
+      border-color: var(--color-accent);
+      color: #fff;
+    }
+
+    /* preview col */
+    .modal-preview-col h4 {
+      margin: 0 0 var(--space-md);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--color-secondary-text);
+    }
+
+    /* share card */
+    #share-card-photo {
+      background: var(--color-surface-soft);
+      border-radius: 22px;
+      border: 1px solid var(--color-border);
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+      font-family: 'Manrope', sans-serif;
+      width: 100%;
+    }
+
+    .sc-header {
+      padding: 16px 18px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .sc-header-left { display: flex; flex-direction: column; gap: 2px; }
+    .sc-board-name  {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem; font-weight: 700;
+      color: var(--color-ebony);
+    }
+    .sc-made-with {
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--color-secondary-text);
+    }
+    .sc-mood-badge {
+      font-size: 0.72rem;
+      padding: 4px 12px;
+      border-radius: var(--radius-pill);
+      background: rgba(248,131,120,0.15);
+      border: 1px solid rgba(248,131,120,0.4);
+      color: var(--color-accent);
+      font-weight: 600;
+    }
+
+    .sc-collage-photo {
+      background: var(--color-surface-soft);
+      border-top: 1px solid var(--color-border);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .sc-mood-bars-photo {
+      padding: 8px 14px 4px;
+    }
+
+    .sc-top-songs {
+      padding: 10px 14px 8px;
+      border-top: 1px solid var(--color-border);
+    }
+
+    .sc-top-songs-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      color: var(--color-secondary-text);
+      margin-bottom: 8px;
+    }
+
+    .sc-tracks {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .sc-track {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--color-surface);
+      border-radius: 8px;
+      padding: 5px 7px;
+      border: 1px solid var(--color-border);
+    }
+
+    .sc-track img { width: 28px; height: 28px; border-radius: 5px; object-fit: cover; flex-shrink: 0; }
+    .sc-track-info { min-width: 0; }
+    .sc-track-name { font-size: 0.72rem; font-weight: 700; color: var(--color-ebony); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sc-track-artist { font-size: 0.62rem; color: var(--color-secondary-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .sc-footer {
+      padding: 8px 14px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .sc-pinclip-brand { font-size: 0.7rem; font-weight: 700; color: var(--color-accent); letter-spacing: 0.05em; }
+    .sc-explore-tag   { font-size: 0.65rem; color: var(--color-secondary-text); }
+
+    /* modal footer */
+    .modal-footer {
+      display: flex;
+      gap: var(--space-md);
+      justify-content: flex-end;
+      padding-top: var(--space-md);
+      border-top: 1px solid var(--color-border);
+      flex-wrap: wrap;
+    }
+
+    /* screenshot overlay */
+    .screenshot-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(45,26,23,0.88);
+      z-index: 300;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 14px;
+      padding: 20px;
+    }
+
+    .screenshot-overlay.open { display: flex; }
+
+    .screenshot-overlay #share-card-photo {
+      width: 100%;
+      max-width: 420px;
+      max-height: calc(100vh - 100px);
+      overflow-y: auto;
+      box-shadow: 0 32px 64px rgba(0,0,0,0.5);
+    }
+
+    .screenshot-hint {
+      color: #fff;
+      font-size: 0.85rem;
+      text-align: center;
+      opacity: 0.8;
+      font-family: 'Manrope', sans-serif;
+    }
+
+    .screenshot-close {
+      color: #fff;
+      background: none;
+      border: 1px solid rgba(255,255,255,0.35);
+      border-radius: var(--radius-pill);
+      padding: 9px 24px;
+      font-family: 'Manrope', sans-serif;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .screenshot-close:hover { background: rgba(255,255,255,0.1); }
+
+    /* photo sel count */
+    #photo-sel-count { color: var(--color-accent); }
+
     /* ── Loading overlay ─────────────────────────────────────────── */
     .loading-overlay {
       display: none;
@@ -569,16 +954,95 @@
         <div class="results-tracks-header">Playlist</div>
         <div class="results-track-list" id="results-track-list"></div>
 
-        
+        <!-- share action row -->
+        <div class="results-action-row" id="results-action-row" style="display:none;">
+          <button id="share-btn-photo">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+            Share to Explore
+          </button>
+        </div>
 
       </div>
 
     </main>
 
     <footer class="footer">
-      <span>© 2026 PinClip by Bill Quach</span>
+      <span>© 2026 Pinlist by Bill Quach</span>
       <a href="privacy.html">Privacy policy</a>
     </footer>
+  </div>
+
+  <!-- ── Share modal ─────────────────────────────────────────────── -->
+  <div class="modal-backdrop" id="share-modal">
+    <div class="modal">
+
+      <div class="modal-header">
+        <div>
+          <h2>Create your share card</h2>
+          <p>Select 1–5 outfit photos, then pick your top 4 tracks.</p>
+        </div>
+        <button class="modal-close" id="modal-close">✕</button>
+      </div>
+
+      <div class="modal-body">
+
+        <!-- left: photo picker + track swap -->
+        <div class="modal-photo-selector">
+          <h4>Select photos <span id="photo-sel-count">0 / 5</span></h4>
+          <div class="modal-photos-grid" id="modal-photos-grid"></div>
+
+          <div class="track-swap-list" id="track-swap-list">
+            <h4>Top songs — tap to swap</h4>
+          </div>
+        </div>
+
+        <!-- right: live preview -->
+        <div class="modal-preview-col">
+          <h4>Preview</h4>
+          <div id="share-card-photo">
+            <div class="sc-header">
+              <div class="sc-header-left">
+                <span class="sc-board-name" id="sc-fit-title">My Fit</span>
+                <span class="sc-made-with">made with PinClip</span>
+              </div>
+              <span class="sc-mood-badge" id="sc-mood-badge-photo">mood</span>
+            </div>
+            <div class="sc-collage-photo" id="sc-collage-photo"></div>
+            <div class="sc-mood-bars-photo" id="sc-mood-bars-photo"></div>
+            <div class="sc-top-songs">
+              <div class="sc-top-songs-label">Top Songs</div>
+              <div class="sc-tracks" id="sc-tracks-photo"></div>
+            </div>
+            <div class="sc-footer">
+              <span class="sc-pinclip-brand">PinClip</span>
+              <span class="sc-explore-tag">pinclip.app/explore</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-outline btn-sm" id="modal-cancel">Cancel</button>
+        <button class="btn-solid btn-sm" id="modal-download-photo" disabled>
+          📸 Screenshot card
+        </button>
+        <button class="btn-solid btn-sm" id="modal-share-explore" disabled
+          style="background:var(--color-accent-2);">
+          Share to Explore
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- screenshot overlay -->
+  <div class="screenshot-overlay" id="screenshot-overlay">
+    <p class="screenshot-hint">📸 Screenshot now, then tap Close</p>
+    <button class="screenshot-close" id="screenshot-close">Close</button>
   </div>
 
   <!-- ── Loading overlay ─────────────────────────────────────────── -->
@@ -596,7 +1060,10 @@
   </div>
 
   <script type="module">
-    const FLASK_URL = "http://localhost:5000";
+    const FLASK_URL ="http://localhost:5000" 
+    //= window.location.origin === "http://localhost:5500" 
+  //? "http://localhost:5000"  // If I'm using Live Server, use the local Flask port
+  //: "";                       // If I'm on Railway, use a relative path (the same domain);
     const MAX_PHOTOS = 5;
 
     // ── Session ID for Spotify (no Pinterest auth needed) ──────────
@@ -756,6 +1223,15 @@
       const boardMoods = data.board_moods ?? [];
       const tracks     = data.playlist    ?? [];
 
+      // store for share modal
+      currentBoardMoods = boardMoods;
+      selectedTrackIds  = tracks.slice(0, 4).map((_, i) => i);
+      selectedPhotoUrls = photos.map(p => p.dataUrl).slice(0, 5);
+
+      // show share action row and enable button
+      resultsActionRow.style.display = "flex";
+      shareBtnPhoto.classList.add("enabled");
+
       // mood header
       resultsMoodTitle.textContent = mood;
       resultsMoodBadges.innerHTML  = "";
@@ -868,6 +1344,7 @@
 
         if (!resp.ok) throw new Error(data.error || "Failed");
 
+        currentPlaylistId           = data.playlist_id ?? "";
         spotifyBtnLabel.textContent = "✓ Saved!";
         spotifyStatus.textContent   = "Playlist saved to your Spotify";
         spotifyStatus.className     = "spotify-status connected";
@@ -914,6 +1391,276 @@
     // 
 
 
+    // ── Share modal state ──────────────────────────────────────────
+    let currentBoardMoods   = [];
+    let selectedPhotoUrls   = [];   // dataUrls of chosen photos
+    let selectedTrackIds    = [];   // indices into currentTracks
+    let currentPlaylistId   = "";
+
+    // ── Elements ───────────────────────────────────────────────────
+    const shareBtnPhoto      = document.getElementById("share-btn-photo");
+    const resultsActionRow   = document.getElementById("results-action-row");
+    const shareModal         = document.getElementById("share-modal");
+    const modalClose         = document.getElementById("modal-close");
+    const modalCancel        = document.getElementById("modal-cancel");
+    const modalPhotosGrid    = document.getElementById("modal-photos-grid");
+    const photoSelCount      = document.getElementById("photo-sel-count");
+    const trackSwapList      = document.getElementById("track-swap-list");
+    const modalDownload      = document.getElementById("modal-download-photo");
+    const modalShareExplore  = document.getElementById("modal-share-explore");
+    const scCollagePhoto     = document.getElementById("sc-collage-photo");
+    const scTracksPhoto      = document.getElementById("sc-tracks-photo");
+    const scFitTitle         = document.getElementById("sc-fit-title");
+    const scMoodBadgePhoto   = document.getElementById("sc-mood-badge-photo");
+    const screenshotOverlay  = document.getElementById("screenshot-overlay");
+    const screenshotClose    = document.getElementById("screenshot-close");
+
+    // ── Hook renderResults to also enable share ────────────────────
+    const _origRenderResults = renderResults;
+    // We patch renderResults inline below instead of wrapping to keep it clean.
+
+    // ── Open / close modal ─────────────────────────────────────────
+    function openShareModal() {
+      if (!currentTracks.length) return;
+      buildModalPhotoGrid();
+      buildTrackSwapList();
+      updateShareCard();
+      shareModal.classList.add("open");
+    }
+
+    function closeShareModal() {
+      shareModal.classList.remove("open");
+    }
+
+    shareBtnPhoto.addEventListener("click", () => {
+      if (shareBtnPhoto.classList.contains("enabled")) openShareModal();
+    });
+    modalClose.addEventListener("click",  closeShareModal);
+    modalCancel.addEventListener("click", closeShareModal);
+    shareModal.addEventListener("click",  e => { if (e.target === shareModal) closeShareModal(); });
+
+    // ── Modal photo grid ───────────────────────────────────────────
+    function buildModalPhotoGrid() {
+      modalPhotosGrid.innerHTML = "";
+      photos.forEach((p, i) => {
+        const item = document.createElement("div");
+        item.className      = "modal-photo-item";
+        item.dataset.url    = p.dataUrl;
+        if (selectedPhotoUrls.includes(p.dataUrl)) item.classList.add("selected");
+
+        const num = selectedPhotoUrls.indexOf(p.dataUrl) + 1;
+        item.innerHTML = `
+          <img src="${p.dataUrl}" alt="Photo ${i + 1}" />
+          <div class="photo-num">${num || ""}</div>
+        `;
+        item.addEventListener("click", () => toggleModalPhoto(item, p.dataUrl));
+        modalPhotosGrid.appendChild(item);
+      });
+      updatePhotoCount();
+    }
+
+    function toggleModalPhoto(item, url) {
+      if (item.classList.contains("selected")) {
+        item.classList.remove("selected");
+        selectedPhotoUrls = selectedPhotoUrls.filter(u => u !== url);
+      } else {
+        if (selectedPhotoUrls.length >= 5) return;
+        item.classList.add("selected");
+        selectedPhotoUrls.push(url);
+      }
+      syncModalPhotoGrid();
+      updateShareCard();
+    }
+
+    function syncModalPhotoGrid() {
+      document.querySelectorAll(".modal-photo-item").forEach(item => {
+        const idx   = selectedPhotoUrls.indexOf(item.dataset.url);
+        const numEl = item.querySelector(".photo-num");
+        if (idx >= 0) {
+          item.classList.add("selected");
+          if (numEl) numEl.textContent = idx + 1;
+        } else {
+          item.classList.remove("selected");
+          if (numEl) numEl.textContent = "";
+        }
+      });
+      updatePhotoCount();
+    }
+
+    function updatePhotoCount() {
+      const n = selectedPhotoUrls.length;
+      photoSelCount.textContent  = `${n} / 5`;
+      const ready                = n >= 1 && selectedTrackIds.length >= 1;
+      modalDownload.disabled     = !ready;
+      modalShareExplore.disabled = !ready;
+    }
+
+    // ── Track swap ─────────────────────────────────────────────────
+    function buildTrackSwapList() {
+      // keep the heading, clear the rest
+      const heading = trackSwapList.querySelector("h4");
+      trackSwapList.innerHTML = "";
+      trackSwapList.appendChild(heading);
+
+      currentTracks.forEach((track, i) => {
+        const row = document.createElement("div");
+        row.className   = "swap-track" + (selectedTrackIds.includes(i) ? " active" : "");
+        row.dataset.idx = i;
+
+        const thumb = track.thumbnail
+          ? `<img src="${track.thumbnail}" alt="${track.name}" />`
+          : `<div style="width:30px;height:30px;border-radius:5px;background:var(--color-border);flex-shrink:0;"></div>`;
+
+        row.innerHTML = `
+          ${thumb}
+          <div class="swap-track-info">
+            <div class="swap-track-name">${track.name}</div>
+            <div class="swap-track-artist">${track.artist}</div>
+          </div>
+          <div class="swap-check">${selectedTrackIds.includes(i) ? "✓" : ""}</div>
+        `;
+        row.addEventListener("click", () => toggleTrackSwap(i));
+        trackSwapList.appendChild(row);
+      });
+    }
+
+    function toggleTrackSwap(idx) {
+      if (selectedTrackIds.includes(idx)) {
+        if (selectedTrackIds.length <= 1) return;
+        selectedTrackIds = selectedTrackIds.filter(i => i !== idx);
+      } else {
+        if (selectedTrackIds.length >= 4) selectedTrackIds.shift();
+        selectedTrackIds.push(idx);
+      }
+      document.querySelectorAll(".swap-track").forEach(row => {
+        const i = parseInt(row.dataset.idx);
+        row.classList.toggle("active", selectedTrackIds.includes(i));
+        row.querySelector(".swap-check").textContent = selectedTrackIds.includes(i) ? "✓" : "";
+      });
+      updateShareCard();
+      updatePhotoCount();
+    }
+
+    // ── Share card preview ─────────────────────────────────────────
+    function updateShareCard() {
+      scFitTitle.textContent      = `My ${currentMood || "Fit"}`;
+      scMoodBadgePhoto.textContent = currentMood || "—";
+      renderCardCollage();
+      renderCardMoods();
+      renderCardTracks();
+    }
+
+    function renderCardCollage() {
+      scCollagePhoto.innerHTML = "";
+      if (!selectedPhotoUrls.length) {
+        scCollagePhoto.innerHTML = `
+          <p style="padding:24px;font-size:0.82rem;color:var(--color-secondary-text);text-align:center;">
+            Select photos to build your collage
+          </p>`;
+        return;
+      }
+
+      const cols = selectedPhotoUrls.length <= 2 ? 1 : selectedPhotoUrls.length <= 4 ? 2 : 3;
+      scCollagePhoto.style.cssText = `display:block;columns:${cols};column-gap:6px;padding:6px;`;
+
+      const heights = [180, 220, 160, 200, 170, 190];
+      selectedPhotoUrls.forEach((url, i) => {
+        const wrap = document.createElement("div");
+        wrap.style.cssText = `break-inside:avoid;margin-bottom:6px;border-radius:12px;overflow:hidden;height:${heights[i % heights.length]}px;`;
+        const img = document.createElement("img");
+        img.src = url;
+        img.style.cssText = "width:100%;height:100%;object-fit:cover;display:block;";
+        wrap.appendChild(img);
+        scCollagePhoto.appendChild(wrap);
+      });
+    }
+
+    function renderCardMoods() {
+      const wrap = document.getElementById("sc-mood-bars-photo");
+      wrap.innerHTML = "";
+      if (!currentBoardMoods.length) return;
+
+      const label = document.createElement("div");
+      label.style.cssText = "font-size:0.65rem;text-transform:uppercase;letter-spacing:0.22em;color:var(--color-secondary-text);margin-bottom:6px;";
+      label.textContent = "Fit Vibe";
+      wrap.appendChild(label);
+
+      currentBoardMoods.forEach(m => {
+        wrap.innerHTML += `
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+            <span style="font-size:0.62rem;font-weight:600;color:var(--color-secondary-text);
+              text-transform:capitalize;min-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(m.label)}</span>
+            <div style="flex:1;height:4px;background:var(--color-border);border-radius:999px;overflow:hidden;">
+              <div style="height:100%;border-radius:999px;background:var(--color-accent);width:${Math.round(m.score * 100)}%;"></div>
+            </div>
+          </div>`;
+      });
+    }
+
+    function renderCardTracks() {
+      scTracksPhoto.innerHTML = "";
+      selectedTrackIds.slice(0, 4).forEach(idx => {
+        const track = currentTracks[idx];
+        if (!track) return;
+        const div = document.createElement("div");
+        div.className = "sc-track";
+        const thumb = track.thumbnail
+          ? `<img src="${track.thumbnail}" alt="${track.name}" />`
+          : `<div style="width:28px;height:28px;border-radius:5px;background:var(--color-border);flex-shrink:0;"></div>`;
+        div.innerHTML = `${thumb}<div class="sc-track-info"><div class="sc-track-name">${esc(track.name)}</div><div class="sc-track-artist">${esc(track.artist)}</div></div>`;
+        scTracksPhoto.appendChild(div);
+      });
+    }
+
+    // ── Screenshot mode ────────────────────────────────────────────
+    modalDownload.addEventListener("click", () => {
+      const card       = document.getElementById("share-card-photo");
+      const previewCol = document.querySelector(".modal-preview-col");
+      screenshotOverlay.insertBefore(card, screenshotOverlay.firstChild);
+      screenshotOverlay.classList.add("open");
+      shareModal.classList.remove("open");
+    });
+
+    screenshotClose.addEventListener("click", () => {
+      const card       = document.getElementById("share-card-photo");
+      const previewCol = document.querySelector(".modal-preview-col");
+      previewCol.appendChild(card);
+      screenshotOverlay.classList.remove("open");
+      shareModal.classList.add("open");
+    });
+
+    // ── Share to Explore ───────────────────────────────────────────
+    modalShareExplore.addEventListener("click", async () => {
+      modalShareExplore.disabled    = true;
+      modalShareExplore.textContent = "Sharing…";
+
+      try {
+        const resp = await fetch(`${FLASK_URL}/explore/save`, {
+          method:  "POST",
+          headers: { "Content-Type": "application/json", "X-Session-ID": sessionId },
+          body:    JSON.stringify({
+            board_name:  `My ${currentMood || "Fit"} fit`,
+            mood:        currentMood,
+            pin_images:  selectedPhotoUrls,   // base64 dataUrls — backend stores as-is or uploads to CDN
+            tracks:      selectedTrackIds.map(i => currentTracks[i]).filter(Boolean),
+            playlist_id: currentPlaylistId || undefined,
+            board_moods: currentBoardMoods,
+          })
+        });
+
+        if (resp.ok) {
+          modalShareExplore.textContent = "✓ Shared!";
+          setTimeout(closeShareModal, 1200);
+        } else {
+          throw new Error("Share failed");
+        }
+      } catch (err) {
+        console.error("Share to explore error:", err);
+        modalShareExplore.disabled    = false;
+        modalShareExplore.textContent = "Try again";
+      }
+    });
+
     // ── Helper ─────────────────────────────────────────────────────
     function esc(str) {
       return String(str ?? "")
@@ -923,4 +1670,3 @@
   </script>
 </body>
 </html>
-

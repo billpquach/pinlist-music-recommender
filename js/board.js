@@ -61,7 +61,12 @@ boardTitle.textContent  = boardName;
 scBoardName.textContent = boardName;
 
 await loadPins();
-initSpotifyAuth(sessionId);
+initSpotifyAuth(sessionId, () => {
+  // If a playlist was already generated, auto-save it once Spotify connects
+  if (currentTracks.length && saveSpotifyInline && !saveSpotifyInline.textContent.includes("Saved")) {
+    saveToSpotify();
+  }
+});
 
 // ─── Load pins ────────────────────────────────────────────────────────────────
 async function loadPins() {
@@ -297,7 +302,12 @@ function renderPlaylist(tracks, mood, bMoods = []) {
 // ─── Save to Spotify ──────────────────────────────────────────────────────────
 saveSpotifyInline.addEventListener("click", async () => {
   if (!isSpotifyConnected()) {
-    alert("Connect Spotify first using the button above.");
+    // Kick off the connect popup — saveToSpotify() will fire automatically
+    // via the onConnect callback in initSpotifyAuth once auth completes.
+    const resp = await fetch(`${FLASK_URL}/spotify/auth-url?session_id=${sessionId}`);
+    const data = await resp.json();
+    window.open(data.url, "spotify_auth", "width=500,height=700");
+    saveSpotifyInline.textContent = "Waiting for Spotify…";
     return;
   }
   await saveToSpotify();
