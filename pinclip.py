@@ -61,8 +61,6 @@ MOOD_LABELS = [
 SUBCATEGORY_MAP = {
     "performative matcha":            "performative",
     "performative totebag":           "performative",
-    "performative book":              "performative",
-    "performative vinyl":             "performative",
     "wired earbuds":                  "performative",
     "old money mediterranean outfit": "old money",
     "old money academia outfit":      "dark academia",
@@ -108,14 +106,13 @@ MOOD_SEEDS = {
     "gothic":               ["1EryAkZ0VHstC6haIxVBiE"],
     "coastal beach":        ["3xKsf9qdS1CyvXSMEid6g8"],
     "preppy":               ["43iIQbw5hx986dUEZbr3eN"],
-    # ── new moods — ⚠️ PLACEHOLDER seeds, swap with real ReccoBeats IDs ──
-    "performative":         ["08PdFBcXzpkn1cWNgmKqhn", "3vkCueOmm7xQDoJ17W1Pm3"],  # ⚠️ borrowed: romantic and dreamy
-    "old money":            ["78OdnOhPOk19xYhGAKgjCO", "3lAun9V0YdTlCSIEXPvfsY", "0cgcD73SD4nFdTK2oKofzW"],  # ⚠️ borrowed: preppy
-    "dark academia":        ["2Co0IjcLTSHMtodwD4gzfg"],  # ⚠️ borrowed: melancholic and sad
-    "hypebeast":            ["1e1JKLEDKP7hEQzJfNAgPl"],  # ⚠️ borrowed: edgy and intense
-    "beach day outfit":     ["3xKsf9qdS1CyvXSMEid6g8"],  # ⚠️ borrowed: coastal beach
-    "gym bro":              ["3QFInJAm9eyaho5vBzxInN"],  # ⚠️ borrowed: bright and energetic
-    "goth":                 ["5dTHtzHFPyi8TlTtzoz1J9", ""],  # ⚠️ borrowed: gothic
+    "performative":         ["08PdFBcXzpkn1cWNgmKqhn", "3vkCueOmm7xQDoJ17W1Pm3"], 
+    "old money":            ["78OdnOhPOk19xYhGAKgjCO", "3lAun9V0YdTlCSIEXPvfsY", "0cgcD73SD4nFdTK2oKofzW"],  
+    "dark academia":        ["2Co0IjcLTSHMtodwD4gzfg"],  
+    "hypebeast":            ["1e1JKLEDKP7hEQzJfNAgPl"],  
+    "beach day outfit":     ["3xKsf9qdS1CyvXSMEid6g8"],  
+    "gym bro":              ["3QFInJAm9eyaho5vBzxInN"],  
+    "goth":                 ["5dTHtzHFPyi8TlTtzoz1J9"]  
 }
 # ─── Pre-cache mood embeddings ────────────────────────────────────────────────
 
